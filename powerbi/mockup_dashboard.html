@@ -1,0 +1,1178 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tarja</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+
+<style>
+/* ============================================================================
+   TARJA — sistema visual para o dashboard da Farma Xperiun
+   A tarja é a faixa colorida que a ANVISA exige na embalagem de medicamentos:
+   vermelha para controlados, preta para os de retenção, sem tarja para venda
+   livre. Aqui ela vira o dispositivo estrutural do relatório: cada bloco
+   carrega uma faixa que codifica o estado do indicador, não a decoração dele.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+  --ground:      #eef2f1;
+  --surface:     #ffffff;
+  --surface-2:   #f5f8f7;
+  --surface-3:   #e9efee;
+  --ink:         #0d1918;
+  --ink-2:       #4a5b5c;
+  --ink-3:       #7c8c8d;
+  --line:        #dbe4e2;
+  --line-2:      #c7d4d2;
+  --accent:      #0b6b60;
+  --accent-soft: #dceded;
+  --accent-ink:  #ffffff;
+
+  --tarja-verde:    #1f7a4c;
+  --tarja-ambar:    #a86a08;
+  --tarja-vermelha: #bf3129;
+  --tarja-preta:    #26302f;
+  --wash-verde:    #e6f3ec;
+  --wash-ambar:    #fbf0dc;
+  --wash-vermelha: #fbeae8;
+
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --s4: #eda100;
+  --s5: #e87ba4;
+  --grid: #e4eae9;
+  --heat-mid:  #e6eae9;
+  --heat-cool: #2a78d6;
+  --heat-warm: #eb6834;
+
+  --shadow: 0 1px 2px rgba(13,25,24,.05), 0 6px 18px -10px rgba(13,25,24,.18);
+
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground:      #0a100f;
+    --surface:     #141c1b;
+    --surface-2:   #1b2524;
+    --surface-3:   #222d2c;
+    --ink:         #e9f1ef;
+    --ink-2:       #a0b3b1;
+    --ink-3:       #728483;
+    --line:        #26312f;
+    --line-2:      #33403e;
+    --accent:      #46c4ac;
+    --accent-soft: #10302b;
+    --accent-ink:  #05201c;
+
+    --tarja-verde:    #35ac6f;
+    --tarja-ambar:    #d89a1b;
+    --tarja-vermelha: #e36055;
+    --tarja-preta:    #8a9695;
+    --wash-verde:    #10281e;
+    --wash-ambar:    #2b2211;
+    --wash-vermelha: #2c1715;
+
+    --s1: #3987e5;
+    --s2: #d95926;
+    --s3: #199e70;
+    --s4: #c98500;
+    --s5: #d55181;
+    --grid: #232e2d;
+    --heat-mid:  #2a3433;
+    --heat-cool: #3987e5;
+    --heat-warm: #d95926;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground:      #0a100f;
+  --surface:     #141c1b;
+  --surface-2:   #1b2524;
+  --surface-3:   #222d2c;
+  --ink:         #e9f1ef;
+  --ink-2:       #a0b3b1;
+  --ink-3:       #728483;
+  --line:        #26312f;
+  --line-2:      #33403e;
+  --accent:      #46c4ac;
+  --accent-soft: #10302b;
+  --accent-ink:  #05201c;
+
+  --tarja-verde:    #35ac6f;
+  --tarja-ambar:    #d89a1b;
+  --tarja-vermelha: #e36055;
+  --tarja-preta:    #8a9695;
+  --wash-verde:    #10281e;
+  --wash-ambar:    #2b2211;
+  --wash-vermelha: #2c1715;
+
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s3: #199e70;
+  --s4: #c98500;
+  --s5: #d55181;
+  --grid: #232e2d;
+  --heat-mid:  #2a3433;
+  --heat-cool: #3987e5;
+  --heat-warm: #d95926;
+
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px 96px; }
+
+/* ---------- Cabeçalho ---------- */
+.masthead { padding: 72px 0 40px; border-bottom: 1px solid var(--line); }
+.eyebrow {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--accent);
+  margin: 0 0 18px;
+}
+h1 {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 115, "wght" 780;
+  font-size: clamp(38px, 6vw, 66px); line-height: .96; letter-spacing: -.022em;
+  margin: 0 0 20px; text-wrap: balance;
+}
+.dek { font-size: 19px; line-height: 1.5; color: var(--ink-2); max-width: 62ch; margin: 0 0 28px; }
+.dek strong { color: var(--ink); font-weight: 600; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em;
+  padding: 5px 11px; border: 1px solid var(--line-2); border-radius: 3px;
+  color: var(--ink-2); background: var(--surface);
+}
+
+/* ---------- Nota de leitura ---------- */
+.readme {
+  margin: 40px 0 0; padding: 22px 26px; background: var(--surface);
+  border: 1px solid var(--line); border-left: 3px solid var(--accent);
+  border-radius: 4px; box-shadow: var(--shadow);
+}
+.readme h2 {
+  font-family: var(--font-display); font-variation-settings: "wdth" 108, "wght" 700;
+  font-size: 15px; letter-spacing: .01em; margin: 0 0 10px; text-transform: none;
+}
+.readme p { margin: 0 0 10px; font-size: 15px; color: var(--ink-2); max-width: 68ch; }
+.readme p:last-child { margin-bottom: 0; }
+
+/* ---------- Navegação de telas ---------- */
+.pagenav {
+  position: sticky; top: 0; z-index: 40; display: flex; gap: 4px;
+  padding: 12px 0; margin: 44px 0 0;
+  background: color-mix(in srgb, var(--ground) 92%, transparent);
+  backdrop-filter: blur(10px); border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+.pagenav button {
+  font-family: var(--font-display); font-variation-settings: "wdth" 104, "wght" 620;
+  font-size: 13px; letter-spacing: .01em; white-space: nowrap;
+  padding: 9px 16px; border-radius: 3px; cursor: pointer;
+  border: 1px solid var(--line-2); background: var(--surface); color: var(--ink-2);
+  transition: background .15s, color .15s, border-color .15s;
+}
+.pagenav button:hover { border-color: var(--accent); color: var(--ink); }
+.pagenav button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.pagenav button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Bloco de especificação ---------- */
+.screen[hidden] { display: none; }
+.spec { padding: 48px 0 26px; }
+.spec-no {
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink-3);
+  letter-spacing: .1em; margin: 0 0 8px;
+}
+.spec h2 {
+  font-family: var(--font-display); font-variation-settings: "wdth" 112, "wght" 740;
+  font-size: clamp(27px, 3.6vw, 40px); line-height: 1.05; letter-spacing: -.018em;
+  margin: 0 0 14px; text-wrap: balance;
+}
+.spec .lede { font-size: 17px; color: var(--ink-2); max-width: 66ch; margin: 0 0 26px; }
+.spec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.spec-cell { background: var(--surface); padding: 16px 18px; }
+.spec-cell h3 {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0 0 8px; font-weight: 500;
+}
+.spec-cell p { margin: 0; font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+.spec-cell code {
+  font-family: var(--font-mono); font-size: 12px; color: var(--ink);
+  background: var(--surface-3); padding: 1px 5px; border-radius: 2px;
+}
+
+/* ---------- Canvas do relatório ---------- */
+.canvas {
+  background: var(--surface-2); border: 1px solid var(--line-2);
+  border-radius: 6px; overflow: hidden; box-shadow: var(--shadow); margin-top: 26px;
+}
+.canvas-bar {
+  display: flex; align-items: center; gap: 12px; padding: 9px 14px;
+  background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.dot-row { display: flex; gap: 5px; }
+.dot-row i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-2); display: block; }
+.canvas-bar .name {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; color: var(--ink-3);
+}
+.canvas-bar .name b { color: var(--ink-2); font-weight: 500; }
+.filters { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+.filter {
+  font-family: var(--font-mono); font-size: 10.5px; padding: 3px 9px;
+  border: 1px solid var(--line-2); border-radius: 2px; color: var(--ink-2);
+  background: var(--surface-2); white-space: nowrap;
+}
+.filter b { color: var(--ink); font-weight: 500; }
+.canvas-body { padding: 16px; display: grid; gap: 12px; }
+
+/* ---------- Cartões ---------- */
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 4px; padding: 14px 16px 16px; position: relative; min-width: 0;
+}
+.card.tarja { padding-left: 19px; }
+.card.tarja::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  border-radius: 4px 0 0 4px; background: var(--tarja-preta);
+}
+.card.t-verde::before    { background: var(--tarja-verde); }
+.card.t-ambar::before    { background: var(--tarja-ambar); }
+.card.t-vermelha::before { background: var(--tarja-vermelha); }
+.card-h {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px; margin-bottom: 12px;
+}
+.card-h h4 {
+  font-family: var(--font-display); font-variation-settings: "wdth" 104, "wght" 640;
+  font-size: 13.5px; letter-spacing: .005em; margin: 0; color: var(--ink);
+}
+.card-h .sub {
+  font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3);
+  letter-spacing: .03em; text-align: right; white-space: nowrap;
+}
+
+/* ---------- Tiles de KPI ---------- */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 13px 15px 14px 17px; position: relative; }
+.kpi::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 4px 0 0 4px; background: var(--tarja-preta); }
+.kpi.t-verde::before { background: var(--tarja-verde); }
+.kpi.t-ambar::before { background: var(--tarja-ambar); }
+.kpi.t-vermelha::before { background: var(--tarja-vermelha); }
+.kpi .lbl {
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .13em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px;
+}
+.kpi .val {
+  font-family: var(--font-display); font-variation-settings: "wdth" 96, "wght" 700;
+  font-size: 25px; line-height: 1.05; letter-spacing: -.018em;
+  font-variant-numeric: tabular-nums;
+}
+.kpi .val small { font-size: 14px; font-variation-settings: "wdth" 96, "wght" 600; color: var(--ink-2); }
+.kpi .note {
+  font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-3);
+  margin-top: 6px; letter-spacing: .02em;
+}
+.kpi .note.up   { color: var(--tarja-verde); }
+.kpi .note.down { color: var(--tarja-vermelha); }
+.kpi .note.warn { color: var(--tarja-ambar); }
+
+/* ---------- Grades internas ---------- */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.g-58 { display: grid; grid-template-columns: 5fr 7fr; gap: 12px; }
+.g-73 { display: grid; grid-template-columns: 7fr 5fr; gap: 12px; }
+@media (max-width: 860px) { .g2, .g3, .g-58, .g-73 { grid-template-columns: 1fr; } }
+
+/* ---------- Gráficos ---------- */
+svg.chart { display: block; width: 100%; height: auto; overflow: visible; }
+.ax { font-family: var(--font-mono); font-size: 10px; fill: var(--ink-3); }
+.vlbl { font-family: var(--font-mono); font-size: 10.5px; fill: var(--ink-2); font-weight: 500; }
+.slbl { font-family: var(--font-body); font-size: 11.5px; fill: var(--ink); }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+
+/* ---------- Legenda ---------- */
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: block; }
+
+/* ---------- Tabelas ---------- */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+thead th {
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .11em;
+  text-transform: uppercase; color: var(--ink-3); font-weight: 500;
+  text-align: left; padding: 0 10px 7px 0; border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+tbody td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+tbody tr:last-child td { border-bottom: none; }
+td.num, th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; padding-left: 18px; padding-right: 0; }
+thead th:last-child, tbody td:last-child { padding-left: 18px; padding-right: 0; }
+td.nm { color: var(--ink); font-weight: 600; white-space: nowrap; }
+.pill {
+  display: inline-block; font-family: var(--font-mono); font-size: 10px;
+  padding: 2px 7px; border-radius: 2px; white-space: nowrap; letter-spacing: .03em;
+}
+.p-verde    { background: var(--wash-verde);    color: var(--tarja-verde); }
+.p-ambar    { background: var(--wash-ambar);    color: var(--tarja-ambar); }
+.p-vermelha { background: var(--wash-vermelha); color: var(--tarja-vermelha); }
+.p-neutro   { background: var(--surface-3);     color: var(--ink-2); }
+
+/* ---------- Faixa de narrativa ---------- */
+.narr {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 4px;
+  padding: 13px 16px 14px 17px; position: relative; font-size: 13.5px; color: var(--ink-2);
+  line-height: 1.5;
+}
+.narr::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 4px 0 0 4px; background: var(--tarja-preta); }
+.narr.t-ambar::before { background: var(--tarja-ambar); }
+.narr.t-verde::before { background: var(--tarja-verde); }
+.narr.t-vermelha::before { background: var(--tarja-vermelha); }
+.narr b { color: var(--ink); font-weight: 600; }
+.narr .tag {
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .13em;
+  text-transform: uppercase; color: var(--ink-3); display: block; margin-bottom: 5px;
+}
+
+/* ---------- Notas de design ---------- */
+.notes { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.note-b h3 {
+  font-family: var(--font-display); font-variation-settings: "wdth" 104, "wght" 660;
+  font-size: 14px; margin: 0 0 7px; color: var(--ink);
+}
+.note-b p { margin: 0; font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+
+/* ---------- Rodapé ---------- */
+.foot { margin-top: 72px; padding-top: 26px; border-top: 1px solid var(--line); }
+.foot h3 {
+  font-family: var(--font-display); font-variation-settings: "wdth" 108, "wght" 700;
+  font-size: 16px; margin: 0 0 12px;
+}
+.foot p { font-size: 14px; color: var(--ink-2); max-width: 70ch; margin: 0 0 10px; }
+.foot code { font-family: var(--font-mono); font-size: 12.5px; color: var(--ink); }
+
+/* ---------- Tooltip ---------- */
+#tip {
+  position: fixed; z-index: 90; pointer-events: none; opacity: 0;
+  transform: translate(-50%, -118%); transition: opacity .1s;
+  background: var(--ink); color: var(--ground); border-radius: 3px;
+  padding: 7px 10px; font-family: var(--font-mono); font-size: 11px;
+  line-height: 1.45; white-space: nowrap; box-shadow: 0 6px 20px -8px rgba(0,0,0,.5);
+}
+#tip b { color: var(--surface); font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style></head><body>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Farma Xperiun · Fase 3 · Mockup de validação</p>
+    <h1>Tarja</h1>
+    <p class="dek">Três telas do dashboard gerencial, desenhadas antes da construção no Power BI para validar a usabilidade com a diretoria. <strong>Todos os números são reais</strong> — vêm das 85.407 transações da base, já validadas na Fase 2. O que se valida aqui é o layout e a hierarquia da informação, não o dado.</p>
+    <div class="chips">
+      <span class="chip">85.407 transações</span>
+      <span class="chip">02/01/2014 → 08/10/2019</span>
+      <span class="chip">R$ 2.313.807,90 de receita</span>
+      <span class="chip">50 medidas DAX</span>
+      <span class="chip">6 relações · 1:N · filtro simples</span>
+    </div>
+  </header>
+
+  <div class="readme">
+    <h2>Por que "Tarja"</h2>
+    <p>A tarja é a faixa que a ANVISA exige na embalagem de medicamentos: vermelha para os controlados, preta para os de retenção de receita, ausente na venda livre. É o vocabulário que qualquer pessoa de farmácia lê sem precisar aprender.</p>
+    <p>Aqui ela vira o dispositivo estrutural do relatório. Cada bloco carrega uma faixa à esquerda que codifica <strong>o estado do indicador</strong> — verde entregue, âmbar em atenção, vermelha crítico, preta sem dado. A cor nunca aparece sozinha: sempre acompanha rótulo e número, para que a leitura não dependa de enxergar a diferença entre dois tons.</p>
+  </div>
+
+  <nav class="pagenav" role="tablist" aria-label="Telas do dashboard">
+    <button role="tab" id="t1" aria-controls="s1" aria-selected="true">01 · Descritiva</button>
+    <button role="tab" id="t2" aria-controls="s2" aria-selected="false">02 · Diagnóstica</button>
+    <button role="tab" id="t3" aria-controls="s3" aria-selected="false">03 · Comparativa</button>
+  </nav>
+
+  <!-- ============================ TELA 1 ============================ -->
+  <section class="screen" id="s1" role="tabpanel" aria-labelledby="t1">
+    <div class="spec">
+      <p class="spec-no">TELA 01</p>
+      <h2>O que aconteceu</h2>
+      <p class="lede">A tela de abertura responde à pergunta mais básica e a que ninguém sabia responder: quanto a farmácia vendeu, de quê, para quem e em que horário. Nada aqui explica causa — isso é trabalho da tela seguinte.</p>
+      <div class="spec-grid">
+        <div class="spec-cell"><h3>Objetivo</h3><p>Estabelecer o retrato do negócio em cinco segundos de leitura. É a tela que abre a reunião.</p></div>
+        <div class="spec-cell"><h3>Dores atendidas</h3><p>Dor 7 (pagamento × desconto) · Dor 8 (volume × margem) · base descritiva para as dores 1 e 3.</p></div>
+        <div class="spec-cell"><h3>Medidas principais</h3><p><code>Receita Líquida</code> · <code>Lucro</code> · <code>Margem %</code> · <code>Ticket Médio</code> · <code>Transações</code></p></div>
+        <div class="spec-cell"><h3>Interações</h3><p>Filtro cruzado entre todos os visuais. Drill-down na hierarquia Produto: Grupo → Categoria → Produto.</p></div>
+      </div>
+    </div>
+
+    <div class="canvas">
+      <div class="canvas-bar">
+        <div class="dot-row"><i></i><i></i><i></i></div>
+        <span class="name"><b>Farma Xperiun</b> · Visão Descritiva</span>
+        <div class="filters">
+          <span class="filter">Período <b>2014–2019</b></span>
+          <span class="filter">Turno <b>Todos</b></span>
+          <span class="filter">Grupo <b>Todos</b></span>
+          <span class="filter">Pagamento <b>Todos</b></span>
+        </div>
+      </div>
+      <div class="canvas-body">
+
+        <div class="kpis">
+          <div class="kpi t-verde"><div class="lbl">Receita Líquida</div><div class="val">R$ 2,31<small> mi</small></div><div class="note">R$ 2.313.807,90</div></div>
+          <div class="kpi t-verde"><div class="lbl">Lucro</div><div class="val">R$ 671,9<small> mil</small></div><div class="note">margem de 29,0%</div></div>
+          <div class="kpi t-ambar"><div class="lbl">Ticket Médio</div><div class="val">R$ 27,09</div><div class="note warn">é ele que move o resultado</div></div>
+          <div class="kpi"><div class="lbl">Transações</div><div class="val">85.407</div><div class="note">em 2.080 dias operados</div></div>
+          <div class="kpi"><div class="lbl">Itens Vendidos</div><div class="val">126.864</div><div class="note">quantidade fracionada</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-h">
+            <h4>Receita líquida mês a mês</h4>
+            <span class="sub">jan/2014 → out/2019 · R$ mil</span>
+          </div>
+          <svg class="chart" id="c-serie" viewBox="0 0 960 230" role="img" aria-label="Série mensal de receita líquida de janeiro de 2014 a outubro de 2019"></svg>
+          <div class="narr t-ambar" style="margin-top:12px">
+            <span class="tag">O que a série mostra</span>
+            <b>A trajetória não foi implacável.</b> 2017 fechou 17,8% abaixo de 2016 antes da retomada em 2018. E o último ponto — outubro de 2019, com R$ 9,2 mil — é um mês de apenas 8 dias, não um colapso. A tela Comparativa mostra o mesmo mês por dia operado.
+          </div>
+        </div>
+
+        <div class="g-58">
+          <div class="card">
+            <div class="card-h"><h4>Receita por grupo terapêutico</h4><span class="sub">margem à direita</span></div>
+            <svg class="chart" id="c-grupo" viewBox="0 0 420 190" role="img" aria-label="Receita e margem por grupo terapêutico"></svg>
+            <div class="narr t-ambar" style="margin-top:10px">
+              <span class="tag">Volume não é lucro</span>
+              O <b>Sistema Respiratório</b> lidera a receita com R$ 717 mil, mas entrega a menor margem (23,9%). Os <b>Analgésicos</b> faturam R$ 24 mil a menos e geram <b>R$ 98 mil de lucro a mais</b>.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-h"><h4>Forma de pagamento</h4><span class="sub">receita · ticket · desconto</span></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Forma</th><th class="num">Receita</th><th class="num">Transações</th><th class="num">Ticket</th><th class="num">Desc. %</th></tr></thead>
+                <tbody id="tb-pagto"></tbody>
+              </table>
+            </div>
+            <div class="narr" style="margin-top:12px">
+              <span class="tag">Achado nulo — e isso importa</span>
+              Ticket e desconto são <b>praticamente idênticos</b> nas cinco formas (R$ 26,82 a R$ 27,38). A diretoria suspeitava que a forma de pagamento explicasse margem. <b>Não explica.</b> Um resultado nulo bem medido economiza um projeto inteiro.
+            </div>
+          </div>
+        </div>
+
+        <div class="g-73">
+          <div class="card">
+            <div class="card-h"><h4>Top 8 produtos</h4><span class="sub">ordenados por receita</span></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Produto</th><th>Grupo</th><th class="num">Receita</th><th class="num">Lucro</th><th class="num">Margem</th><th>Perfil</th></tr></thead>
+                <tbody id="tb-prod"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-h"><h4>Receita por turno</h4><span class="sub">valores absolutos</span></div>
+            <svg class="chart" id="c-turno" viewBox="0 0 380 168" role="img" aria-label="Receita absoluta por turno"></svg>
+            <div class="narr t-vermelha" style="margin-top:10px">
+              <span class="tag">Cuidado com esta leitura</span>
+              Em valor absoluto a noite parece o pior turno. <b>Ela só tem 4 horas contra 5 dos outros dois.</b> A comparação justa está na tela Comparativa — e inverte o ranking.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note-b"><h3>Por que o alerta convive com o gráfico</h3><p>O visual de turno está aqui porque a diretoria pede por ele — mas sozinho ele induz a decisão errada. Em vez de omitir, o cartão carrega a ressalva ao lado do número. Um dashboard honesto avisa onde ele mesmo pode enganar.</p></div>
+      <div class="note-b"><h3>Nenhum gráfico de pizza</h3><p>Forma de pagamento virou tabela, não rosca. A pergunta real não é "qual fatia é maior" — é se ticket e desconto variam entre elas. Comparação de valores próximos se faz em coluna alinhada, não em ângulo.</p></div>
+      <div class="note-b"><h3>Rótulo direto em tudo</h3><p>Todo valor aparece escrito ao lado da barra. A cor identifica, o número informa — quem não distingue os tons continua lendo a tela inteira sem perda.</p></div>
+    </div>
+  </section>
+
+  <!-- ============================ TELA 2 ============================ -->
+  <section class="screen" id="s2" role="tabpanel" aria-labelledby="t2" hidden>
+    <div class="spec">
+      <p class="spec-no">TELA 02</p>
+      <h2>Por que aconteceu</h2>
+      <p class="lede">A tela do diagnóstico. Aqui as duas hipóteses da diretoria sobre a sazonalidade de outubro são postas à prova — e as duas caem. É também onde o capital de giro travado em estoque ganha, pela primeira vez, um valor em reais.</p>
+      <div class="spec-grid">
+        <div class="spec-cell"><h3>Objetivo</h3><p>Explicar as causas por trás dos números da tela 01 e derrubar hipóteses que não se sustentam.</p></div>
+        <div class="spec-cell"><h3>Dores atendidas</h3><p>Dor 2 (capital de giro) · Dor 3 (sazonalidade) · Dor 6 (feriado e fim de semana).</p></div>
+        <div class="spec-cell"><h3>Medidas principais</h3><p><code>Índice Sazonal vs. Categoria</code> · <code>Capital Imobilizado em Estoque</code> · <code>Índice de Exposição Logística</code></p></div>
+        <div class="spec-cell"><h3>Interações</h3><p>Clique numa célula do mapa filtra os demais visuais por grupo e mês. Tooltip com receita média e nº de anos na média.</p></div>
+      </div>
+    </div>
+
+    <div class="canvas">
+      <div class="canvas-bar">
+        <div class="dot-row"><i></i><i></i><i></i></div>
+        <span class="name"><b>Farma Xperiun</b> · Visão Diagnóstica</span>
+        <div class="filters">
+          <span class="filter">Período <b>2014–2018</b></span>
+          <span class="filter">Base do índice <b>100 = mês médio</b></span>
+          <span class="filter">2019 <b>excluído — ano parcial</b></span>
+        </div>
+      </div>
+      <div class="canvas-body">
+
+        <div class="card">
+          <div class="card-h">
+            <h4>Índice de sazonalidade por categoria</h4>
+            <span class="sub">100 = mês médio da própria categoria · passe o cursor</span>
+          </div>
+          <div class="tbl-wrap"><svg class="chart" id="c-heat" viewBox="0 0 960 216" role="img" aria-label="Mapa de calor do índice de sazonalidade por categoria e mês"></svg></div>
+          <div class="legend" style="margin-top:12px">
+            <span><i style="background:var(--heat-cool)"></i>abaixo da média da categoria</span>
+            <span><i style="background:var(--heat-mid);border:1px solid var(--line-2)"></i>na média (100)</span>
+            <span><i style="background:var(--heat-warm)"></i>acima da média</span>
+          </div>
+        </div>
+
+        <div class="g2">
+          <div class="narr t-vermelha">
+            <span class="tag">Hipótese 1 · Alergia de primavera — REFUTADA</span>
+            Os <b>anti-histamínicos caem em outubro</b> (índice 73). Eles são contracíclicos nesta base: pico em maio (189) e vale em dezembro (49). A categoria que a hipótese elegeu como protagonista é a única da tabela que recua no mês em questão.
+          </div>
+          <div class="narr t-vermelha">
+            <span class="tag">Hipótese 2 · Outubro Rosa — REFUTADA</span>
+            Tráfego difuso elevaria todas as categorias por igual. Não é o caso: <b>analgésicos (140) e antiasmáticos (140)</b> sobem sozinhos, enquanto anti-inflamatórios (102) e sistema nervoso (105) ficam parados. Não é maré — é corrente.
+          </div>
+        </div>
+
+        <div class="narr t-ambar">
+          <span class="tag">⚠ Alerta de qualidade de dado — subir para a diretoria</span>
+          Nesta base os <b>anti-histamínicos têm pico no outono/inverno e vale no verão</b>, e os <b>antiasmáticos caem no inverno</b> (índice 54 em agosto). Os dois padrões contrariam a expectativa clínica e a própria orientação da documentação do desafio. Podem ser característica real desta farmácia; podem ser artefato da base. <b>Validar com o negócio antes de virar decisão de compra.</b>
+        </div>
+
+        <div class="g-58">
+          <div class="card">
+            <div class="card-h"><h4>Receita média por tipo de dia</h4><span class="sub">por dia operado</span></div>
+            <svg class="chart" id="c-dia" viewBox="0 0 420 152" role="img" aria-label="Receita média por dia operado segundo o tipo de dia"></svg>
+            <div class="narr t-ambar" style="margin-top:10px">
+              <span class="tag">Contra a intuição</span>
+              <b>Fim de semana rende mais que dia útil</b> (R$ 1.129 contra R$ 1.108 por dia). Feriado perde só 8,4% — e há apenas 37 deles na série, então a diferença é frágil. Nada aqui justifica escala reduzida no fim de semana.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-h"><h4>Fornecedores · prazo × margem</h4><span class="sub">área do círculo = share da receita</span></div>
+            <svg class="chart" id="c-forn" viewBox="0 0 520 250" role="img" aria-label="Dispersão de fornecedores por prazo de entrega e margem"></svg>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h4>Capital de giro imobilizado em estoque de cobertura</h4><span class="sub">custo médio diário × prazo de entrega</span></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Fornecedor</th><th>Local</th><th class="num">Prazo</th><th class="num">Share</th><th class="num">Margem</th><th class="num">Capital travado</th><th>Classificação</th></tr></thead>
+              <tbody id="tb-forn"></tbody>
+            </table>
+          </div>
+          <div class="narr t-vermelha" style="margin-top:12px">
+            <span class="tag">A ação de maior retorno</span>
+            <b>Hypera e Neo Química têm share quase igual</b> (9,4% e 9,7%). A Hypera entrega em 2 dias, tem a melhor margem da base (33,5%) e trava R$ 138,88. A Neo Química leva 5 dias, tem 22,4% de margem e trava R$ 419,69 — <b>três vezes mais capital pelo mesmo tamanho de receita.</b> Onde os portfólios se sobrepõem, migrar volume libera caixa e ganha 11 pontos de margem.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note-b"><h3>Escala divergente, não sequencial</h3><p>O índice sazonal tem um centro que significa alguma coisa: 100 é a média da própria categoria. Duas famílias de cor separadas por um cinza neutro mostram <em>de que lado</em> cada mês cai. Uma rampa sequencial esconderia justamente isso.</p></div>
+      <div class="note-b"><h3>Cada categoria contra si mesma</h3><p>Normalizar por categoria isola o efeito de calendário do efeito de tamanho. Sem isso os anti-histamínicos — 5,7% da receita — sumiriam na escala, e a hipótese da alergia jamais seria testável.</p></div>
+      <div class="note-b"><h3>O alerta é parte do produto</h3><p>A sazonalidade invertida podia ter ficado num rodapé de documentação. Ficou no meio da tela, em tarja âmbar. Uma limitação escondida vira decisão errada; exposta, vira pergunta para o negócio.</p></div>
+    </div>
+  </section>
+
+  <!-- ============================ TELA 3 ============================ -->
+  <section class="screen" id="s3" role="tabpanel" aria-labelledby="t3" hidden>
+    <div class="spec">
+      <p class="spec-no">TELA 03</p>
+      <h2>Meta contra realidade</h2>
+      <p class="lede">A tela que a diretoria nunca teve. Seis anos de metas foram analisados sem que ninguém comparasse com o que foi entregue — e é aqui que a confusão entre planejar crescimento e entregar crescimento fica visível em um único gráfico.</p>
+      <div class="spec-grid">
+        <div class="spec-cell"><h3>Objetivo</h3><p>Confrontar planejado com realizado e corrigir as comparações que estavam sendo feitas em bases desiguais.</p></div>
+        <div class="spec-cell"><h3>Dores atendidas</h3><p>Dor 1 (turno) · Dor 4 (meta vs. realizado) · Dor 5 (o mistério de 2019).</p></div>
+        <div class="spec-cell"><h3>Medidas principais</h3><p><code>% Atingimento Meta</code> · <code>Aderência da Meta ao Realizado</code> · <code>Receita por Hora</code> · <code>Receita por Dia Operado</code></p></div>
+        <div class="spec-cell"><h3>Interações</h3><p>Parâmetro What-If <code>Cenário Hora Extra</code> (0–3 h) recalcula a receita potencial do turno da noite ao vivo.</p></div>
+      </div>
+    </div>
+
+    <div class="canvas">
+      <div class="canvas-bar">
+        <div class="dot-row"><i></i><i></i><i></i></div>
+        <span class="name"><b>Farma Xperiun</b> · Visão Comparativa</span>
+        <div class="filters">
+          <span class="filter">Meses com meta <b>69 de 72</b></span>
+          <span class="filter">Meta zero <b>excluída</b></span>
+          <span class="filter">Cenário hora extra <b>+1 h</b></span>
+        </div>
+      </div>
+      <div class="canvas-body">
+
+        <div class="kpis">
+          <div class="kpi t-vermelha"><div class="lbl">Anos com meta batida</div><div class="val">0<small> / 6</small></div><div class="note down">melhor ano: 2017 com 100,0%</div></div>
+          <div class="kpi t-vermelha"><div class="lbl">Meses batidos</div><div class="val">31<small> / 69</small></div><div class="note down">taxa de 44,9%</div></div>
+          <div class="kpi t-ambar"><div class="lbl">Aderência meta ↔ realizado</div><div class="val">90,8%</div><div class="note warn">alto demais para ser alvo</div></div>
+          <div class="kpi t-vermelha"><div class="lbl">Gap acumulado</div><div class="val">−R$ 59,7<small> mil</small></div><div class="note down">em seis anos</div></div>
+          <div class="kpi t-verde"><div class="lbl">Atingimento de quantidade</div><div class="val">96,8%</div><div class="note">estável em todos os anos</div></div>
+        </div>
+
+        <div class="g-73">
+          <div class="card">
+            <div class="card-h"><h4>Meta contra realizado, ano a ano</h4><span class="sub">R$ mil · meses batidos abaixo</span></div>
+            <svg class="chart" id="c-meta" viewBox="0 0 620 250" role="img" aria-label="Comparação anual entre meta e receita realizada"></svg>
+            <div class="legend">
+              <span><i style="background:var(--s1)"></i>Meta de receita</span>
+              <span><i style="background:var(--s2)"></i>Realizado</span>
+            </div>
+          </div>
+          <div class="card t-vermelha tarja">
+            <div class="card-h"><h4>A meta era uma previsão</h4><span class="sub">descoberta central</span></div>
+            <p style="font-size:14px;color:var(--ink-2);margin:0 0 12px;line-height:1.55">Uma meta ambiciosa produz variância: anos de superação e anos de frustração. Aqui o desvio anual entre meta e realizado <b style="color:var(--ink)">nunca passou de 5,3%</b>, em nenhuma direção, em seis anos.</p>
+            <p style="font-size:14px;color:var(--ink-2);margin:0 0 12px;line-height:1.55">2017 comprova a mecânica: a receita caiu 17,8%, a meta foi <em>reduzida</em> de R$ 442,9 mil para R$ 363,0 mil — e o ano fechou em exatos <b style="color:var(--ink)">100,0%</b>.</p>
+            <p style="font-size:14px;color:var(--ink-2);margin:0;line-height:1.55">O sistema de metas não puxava o negócio. Ele se ajustava ao que o negócio já tinha entregue.</p>
+          </div>
+        </div>
+
+        <div class="g2">
+          <div class="card">
+            <div class="card-h"><h4>Turno · a inversão</h4><span class="sub">absoluto contra receita por hora</span></div>
+            <svg class="chart" id="c-flip" viewBox="0 0 460 210" role="img" aria-label="Comparação do ranking de turnos em valor absoluto e por hora de operação"></svg>
+            <div class="narr t-verde" style="margin-top:10px">
+              <span class="tag">O ranking se inverte</span>
+              Normalizada por hora, <b>a noite lidera</b>: R$ 88,96 contra R$ 79,70 da manhã e R$ 74,29 da tarde. Também lidera em lucro por hora e em ticket. E faz <b>3,09 transações por hora</b> — o maior fluxo dos três, o que elimina a tese de "cai o movimento à noite".
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-h"><h4>2019 contra 2018 · receita por dia operado</h4><span class="sub">R$ por dia com venda</span></div>
+            <svg class="chart" id="c-2019" viewBox="0 0 460 210" role="img" aria-label="Receita por dia operado em 2019 comparada a 2018"></svg>
+            <div class="legend">
+              <span><i style="background:var(--s2)"></i>2019</span>
+              <span><i style="background:var(--s1)"></i>2018</span>
+            </div>
+            <div class="narr t-verde" style="margin-top:10px">
+              <span class="tag">Não houve colapso</span>
+              Outubro de 2019 rendeu <b>R$ 1.147 por dia</b> — acima de junho, julho, agosto e setembro do mesmo ano — com a segunda melhor margem do ano. O último dia registrado, 08/10, teve 33 transações. <b>Terminou a captura de dados, não a operação.</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="card t-ambar tarja">
+          <div class="card-h"><h4>Simulador · extensão do turno da noite</h4><span class="sub">parâmetro What-If · fator de atenuação 70%</span></div>
+          <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:center">
+            <div style="flex:1 1 260px;min-width:240px">
+              <label for="sl" style="font-family:var(--font-mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:10px">Horas extras à noite</label>
+              <input type="range" id="sl" min="0" max="3" step="1" value="1" style="width:100%;accent-color:var(--accent)">
+              <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10.5px;color:var(--ink-3);margin-top:4px"><span>0 h</span><span>1 h</span><span>2 h</span><span>3 h</span></div>
+            </div>
+            <div style="display:flex;gap:26px;flex-wrap:wrap">
+              <div><div class="lbl" style="font-family:var(--font-mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px">Receita potencial / ano</div><div id="wf-rec" style="font-family:var(--font-display);font-variation-settings:'wdth' 96,'wght' 700;font-size:27px;font-variant-numeric:tabular-nums;letter-spacing:-.018em"></div></div>
+              <div><div class="lbl" style="font-family:var(--font-mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px">Lucro potencial / ano</div><div id="wf-luc" style="font-family:var(--font-display);font-variation-settings:'wdth' 96,'wght' 700;font-size:27px;font-variant-numeric:tabular-nums;letter-spacing:-.018em"></div></div>
+              <div><div class="lbl" style="font-family:var(--font-mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px">Fechamento</div><div id="wf-hora" style="font-family:var(--font-display);font-variation-settings:'wdth' 96,'wght' 700;font-size:27px;font-variant-numeric:tabular-nums;letter-spacing:-.018em"></div></div>
+            </div>
+          </div>
+          <div class="narr t-ambar" style="margin-top:14px">
+            <span class="tag">Leia como teto, não como previsão</span>
+            A última hora de operação rende menos que a média do turno — clientes não chegam distribuídos por igual. O modelo aplica 70% de atenuação e ainda assim <b>não desconta o adicional noturno</b>. O número serve para dimensionar um teste de 60 dias, não para justificar a mudança.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note-b"><h3>Duas barras, um eixo</h3><p>Meta e realizado dividem a mesma escala em reais, então dividem o mesmo eixo. O percentual de atingimento vira rótulo de texto acima do par — nunca uma segunda escala vertical, que faria qualquer relação parecer verdadeira.</p></div>
+      <div class="note-b"><h3>O gráfico da inversão</h3><p>Os dois painéis de turno existem lado a lado de propósito. Mostrar só o correto não corrige a leitura antiga de ninguém. Ver o ranking virar é o que muda a conversa.</p></div>
+      <div class="note-b"><h3>O simulador diz o que não sabe</h3><p>O What-If poderia devolver um número limpo e convincente. Devolve um teto declarado, com a atenuação exposta e o custo da mão de obra ausente por escrito — porque é assim que um número vira teste, e não decisão precipitada.</p></div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <h3>O que já está pronto para a construção</h3>
+    <p>O modelo dimensional está especificado em <code>powerbi/star_schema.md</code> — seis relações 1:N com filtro simples, nenhuma bidirecional, e a dimensão conformada <code>d_periodo</code> resolvendo a ligação entre a meta mensal e o fato diário. As 50 medidas estão em <code>powerbi/dax_measures.txt</code>, organizadas em oito pastas de exibição, com <code>VAR</code> em todo cálculo de múltiplas etapas.</p>
+    <p>Ao terminar a construção, o modelo deve reproduzir sem filtros: <b>85.407 transações · R$ 2.313.807,90 de receita · R$ 671.861,32 de lucro · ticket de R$ 27,09 · 2.080 dias operados · 31 meses batidos</b>. Se qualquer um desses seis números divergir, o erro está no modelo — não no banco.</p>
+  </footer>
+
+</div>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------------------------------------------------------- dados */
+  const MENSAL = [31255,32195,28140,23722,26230,25498,23995,25990,31212,35521,32317,37804,38598,31984,34124,27966,28804,30441,25110,27074,27330,40939,34386,39407,38638,39868,40748,40875,34321,31986,28777,29696,33503,46186,33104,44062,44344,27282,24982,28684,25279,27933,25833,24104,29743,37720,32785,34454,35842,37935,44174,38620,33658,26921,28908,30933,35263,41621,40300,43791,55237,34346,40627,35533,38621,28921,28921,28350,31160,9175];
+
+  const GRUPO = [
+    { nome: "Sistema Respiratório", receita: 717399, lucro: 171473, margem: 23.9 },
+    { nome: "Analgésicos",          receita: 693847, lucro: 269726, margem: 38.9 },
+    { nome: "Sistema Nervoso",      receita: 486533, lucro: 112642, margem: 23.2 },
+    { nome: "Anti-inflamatórios",   receita: 416028, lucro: 118020, margem: 28.4 }
+  ];
+
+  const PAGTO = [
+    ["PIX", 707037, 25820, 27.38, 0.99],
+    ["Cartão Crédito", 576375, 21379, 26.96, 1.02],
+    ["Cartão Débito", 451148, 16824, 26.82, 1.00],
+    ["Dinheiro", 353350, 12984, 27.21, 1.06],
+    ["Convênio", 225898, 8400, 26.89, 0.95]
+  ];
+
+  const PROD = [
+    ["Formoterol 12mcg", "Respiratório", 238950, 46165, 19.3, "Nicho Rentável"],
+    ["Budesonida 200mcg", "Respiratório", 180607, 38155, 21.1, "Nicho Rentável"],
+    ["Novalgina 1g", "Analgésicos", 151586, 52057, 34.3, "Âncora de Lucro"],
+    ["Paracetamol + Cafeína", "Analgésicos", 131035, 48922, 37.3, "Âncora de Lucro"],
+    ["Alprazolam 0.5mg", "Sistema Nervoso", 117301, 24839, 21.2, "Nicho Rentável"],
+    ["Bromazepam 3mg", "Sistema Nervoso", 104207, 24192, 23.2, "Nicho Rentável"],
+    ["Paracetamol Gotas", "Analgésicos", 102193, 40273, 39.4, "Âncora de Lucro"],
+    ["Brometo Ipratrópio", "Respiratório", 96296, 26234, 27.2, "Nicho Rentável"]
+  ];
+
+  const TURNO = [
+    { nome: "Manhã", horas: 5, receita: 828533, porHora: 79.70, lucroHora: 22.92 },
+    { nome: "Tarde", horas: 5, receita: 769649, porHora: 74.29, lucroHora: 21.62 },
+    { nome: "Noite", horas: 4, receita: 715626, porHora: 88.96, lucroHora: 26.05 }
+  ];
+
+  const HEAT_ORDER = ["Analgésicos", "Resp · Antiasmáticos", "Sistema Nervoso", "Anti-inflamatórios", "Resp · Anti-histamínicos"];
+  const HEAT = {
+    "Analgésicos":               [129,111,104,88,80,71,69,74,101,140,106,126],
+    "Resp · Antiasmáticos":      [105,114,117,105,78,80,58,54,81,140,116,153],
+    "Sistema Nervoso":           [130,94,94,82,85,92,93,107,103,105,105,110],
+    "Anti-inflamatórios":        [100,98,101,97,97,93,102,107,99,102,100,103],
+    "Resp · Anti-histamínicos":  [59,53,98,164,189,159,122,94,84,73,57,49]
+  };
+  const GERAL_MES = [114,102,104,97,90,86,80,83,95,122,105,121];
+  const MES_ABREV = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+
+  const DIA = [
+    { nome: "Fim de Semana", valor: 1129.05, dias: 583 },
+    { nome: "Dia Útil",      valor: 1108.24, dias: 1460 },
+    { nome: "Feriado",       valor: 1014.75, dias: 37 }
+  ];
+
+  const FORN = [
+    ["Medley", "Campinas/SP", 3, 27.4, 31.5, 625.86, "Aceitável", "p-neutro"],
+    ["Cimed", "Pouso Alegre/MG", 3, 13.4, 20.4, 355.94, "Renegociar Preço", "p-ambar"],
+    ["Neo Química", "Anápolis/GO", 5, 9.7, 22.4, 419.69, "Revisar Contrato", "p-vermelha"],
+    ["Eurofarma", "São Paulo/SP", 3, 14.0, 32.0, 316.85, "Aceitável", "p-neutro"],
+    ["Aché", "Guarulhos/SP", 4, 8.5, 27.6, 274.09, "Revisar Contrato", "p-vermelha"],
+    ["EMS", "Hortolândia/SP", 2, 15.2, 31.9, 229.64, "Parceiro Modelo", "p-verde"],
+    ["Hypera Pharma", "São Paulo/SP", 2, 9.4, 33.5, 138.88, "Parceiro Modelo", "p-verde"],
+    ["Cristália", "Itapira/SP", 4, 2.4, 27.3, 79.15, "Revisar Contrato", "p-vermelha"]
+  ];
+
+  const ANO = [
+    [2014, 364348, 353879, 5, 12],
+    [2015, 407822, 386163, 3, 12],
+    [2016, 442919, 441765, 7, 12],
+    [2017, 363000, 363143, 7, 12],
+    [2018, 439746, 437965, 7, 12],
+    [2019, 346496, 321717, 2, 9]
+  ];
+
+  const D2019 = [[1,1905,1236],[2,1227,1355],[3,1311,1425],[4,1269,1332],[5,1246,1086],[6,964,897],[7,933,933],[8,915,998],[9,1039,1175],[10,1147,1343]];
+
+  /* ------------------------------------------------------------ utilidades */
+  const NS = "http://www.w3.org/2000/svg";
+  const brl = (v, d) => v.toLocaleString("pt-BR", { minimumFractionDigits: d ?? 0, maximumFractionDigits: d ?? 0 });
+  const el = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  const txt = (s, x, y, cls, anchor) => { const t = el("text", { x, y, class: cls || "ax" }); if (anchor) t.setAttribute("text-anchor", anchor); t.textContent = s; return t; };
+  const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+  const tip = document.getElementById("tip");
+  function showTip(e, html) {
+    tip.innerHTML = html;
+    tip.style.left = e.clientX + "px";
+    tip.style.top = e.clientY + "px";
+    tip.style.opacity = "1";
+  }
+  const hideTip = () => { tip.style.opacity = "0"; };
+
+  function hoverable(node, html) {
+    node.style.cursor = "default";
+    node.addEventListener("pointermove", e => showTip(e, html));
+    node.addEventListener("pointerleave", hideTip);
+  }
+
+  /* --------------------------------------------------- 1 · série mensal */
+  function serieMensal() {
+    const svg = document.getElementById("c-serie");
+    const W = 960, H = 230, L = 44, R = 12, T = 14, B = 30;
+    const iw = W - L - R, ih = H - T - B;
+    const max = 60000;
+    const x = i => L + (i / (MENSAL.length - 1)) * iw;
+    const y = v => T + ih - (v / max) * ih;
+
+    [0, 15000, 30000, 45000, 60000].forEach(v => {
+      svg.appendChild(el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "gridline" }));
+      svg.appendChild(txt(v / 1000, L - 8, y(v) + 3.5, "ax", "end"));
+    });
+
+    let d = "", a = `M ${x(0)} ${y(0)}`;
+    MENSAL.forEach((v, i) => { d += (i ? " L " : "M ") + x(i) + " " + y(v); a += ` L ${x(i)} ${y(v)}`; });
+    a += ` L ${x(MENSAL.length - 1)} ${y(0)} Z`;
+
+    const grad = el("linearGradient", { id: "gserie", x1: "0", y1: "0", x2: "0", y2: "1" });
+    grad.appendChild(el("stop", { offset: "0%", "stop-color": cssv("--s1"), "stop-opacity": ".22" }));
+    grad.appendChild(el("stop", { offset: "100%", "stop-color": cssv("--s1"), "stop-opacity": "0" }));
+    const defs = el("defs"); defs.appendChild(grad); svg.appendChild(defs);
+
+    svg.appendChild(el("path", { d: a, fill: "url(#gserie)" }));
+    svg.appendChild(el("path", { d, fill: "none", stroke: cssv("--s1"), "stroke-width": "2", "stroke-linejoin": "round", "stroke-linecap": "round" }));
+
+    // marcos que a análise identificou
+    const marcos = [[36, "2017 · −17,8%", cssv("--tarja-vermelha")], [60, "jan/2019 · pico", cssv("--tarja-ambar")], [69, "out/2019 · 8 dias", cssv("--tarja-vermelha")]];
+    marcos.forEach(([i, label, c]) => {
+      svg.appendChild(el("line", { x1: x(i), x2: x(i), y1: T, y2: T + ih, stroke: c, "stroke-width": "1", "stroke-dasharray": "3 3", opacity: ".55" }));
+      const t = txt(label, x(i), T - 2, "vlbl", i > 55 ? "end" : "middle");
+      t.setAttribute("fill", c); t.setAttribute("font-size", "10");
+      svg.appendChild(t);
+      svg.appendChild(el("circle", { cx: x(i), cy: y(MENSAL[i]), r: "4", fill: cssv("--surface"), stroke: c, "stroke-width": "2" }));
+    });
+
+    for (let a2 = 0; a2 < 6; a2++) {
+      const i = a2 * 12;
+      svg.appendChild(txt(2014 + a2, x(i), H - 10, "ax", a2 === 0 ? "start" : "middle"));
+    }
+
+    MENSAL.forEach((v, i) => {
+      const hit = el("rect", { x: x(i) - iw / 140, y: T, width: iw / 70, height: ih, fill: "transparent" });
+      const ano = 2014 + Math.floor(i / 12), mes = MES_ABREV[i % 12];
+      hoverable(hit, `<b>${mes}/${ano}</b><br>R$ ${brl(v)}`);
+      hit.addEventListener("pointerenter", () => {
+        svg.appendChild(el("circle", { cx: x(i), cy: y(v), r: "3.5", fill: cssv("--s1"), stroke: cssv("--surface"), "stroke-width": "2", class: "hovpt" }));
+      });
+      hit.addEventListener("pointerleave", () => svg.querySelectorAll(".hovpt").forEach(n => n.remove()));
+      svg.appendChild(hit);
+    });
+  }
+
+  /* ------------------------------------------------ 1 · grupo terapêutico */
+  function grupoChart() {
+    const svg = document.getElementById("c-grupo");
+    const W = 420, L = 0, T = 6, bh = 26, gap = 17;
+    const maxBar = 236, max = 717399;
+    GRUPO.forEach((g, i) => {
+      const y = T + i * (bh + gap);
+      svg.appendChild(txt(g.nome, L, y + 9, "slbl"));
+      const w = (g.receita / max) * maxBar;
+      const bar = el("rect", { x: L, y: y + 15, width: w, height: 11, rx: "4", fill: i === 0 ? cssv("--s2") : cssv("--s1"), opacity: i === 0 ? "1" : (0.9 - i * 0.14) });
+      hoverable(bar, `<b>${g.nome}</b><br>Receita R$ ${brl(g.receita)}<br>Lucro R$ ${brl(g.lucro)} · ${brl(g.margem, 1)}%`);
+      svg.appendChild(bar);
+      svg.appendChild(txt("R$ " + brl(g.receita / 1000) + " mil", w + 8, y + 25, "vlbl"));
+      const m = txt(brl(g.margem, 1) + "% margem", W, y + 9, "vlbl", "end");
+      m.setAttribute("fill", g.margem >= 28 ? cssv("--tarja-verde") : cssv("--tarja-vermelha"));
+      svg.appendChild(m);
+    });
+  }
+
+  /* -------------------------------------------------------- 1 · turno abs */
+  function turnoAbs() {
+    const svg = document.getElementById("c-turno");
+    const W = 380, base = 132, max = 828533, bw = 62;
+    TURNO.forEach((t, i) => {
+      const x = 34 + i * 110;
+      const h = (t.receita / max) * 96;
+      const bar = el("rect", { x, y: base - h, width: bw, height: h, rx: "4", fill: t.nome === "Noite" ? cssv("--s2") : cssv("--s1"), opacity: t.nome === "Noite" ? "1" : ".85" });
+      hoverable(bar, `<b>Turno ${t.nome}</b> · ${t.horas} h<br>R$ ${brl(t.receita)}`);
+      svg.appendChild(bar);
+      svg.appendChild(txt("R$ " + brl(t.receita / 1000) + " mil", x + bw / 2, base - h - 8, "vlbl", "middle"));
+      svg.appendChild(txt(t.nome, x + bw / 2, base + 16, "slbl", "middle"));
+      svg.appendChild(txt(t.horas + " h de operação", x + bw / 2, base + 30, "ax", "middle"));
+    });
+    svg.appendChild(el("line", { x1: 24, x2: W - 12, y1: base, y2: base, stroke: cssv("--line-2"), "stroke-width": "1" }));
+  }
+
+  /* ------------------------------------------------------- 2 · mapa calor */
+  function heatmap() {
+    const svg = document.getElementById("c-heat");
+    const L = 178, T = 22, cw = 62, ch = 27, gap = 2;
+    const mid = cssv("--heat-mid"), cool = cssv("--heat-cool"), warm = cssv("--heat-warm");
+
+    const hex2rgb = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+    const mixc = (a, b, t) => { const A = hex2rgb(a), B = hex2rgb(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(",")})`; };
+    const scale = v => { const t = Math.max(-1, Math.min(1, (v - 100) / 55)); return t < 0 ? mixc(mid, cool, -t) : mixc(mid, warm, t); };
+    const inkFor = v => Math.abs(v - 100) / 55 > 0.55 ? "#ffffff" : cssv("--ink");
+
+    MES_ABREV.forEach((m, j) => {
+      const t = txt(m, L + j * (cw + gap) + cw / 2, T - 7, "ax", "middle");
+      if (j === 9) { t.setAttribute("fill", cssv("--ink")); t.setAttribute("font-weight", "600"); }
+      svg.appendChild(t);
+    });
+
+    HEAT_ORDER.forEach((g, i) => {
+      const y = T + i * (ch + gap);
+      const lbl = txt(g, L - 10, y + ch / 2 + 4, "slbl", "end");
+      if (g.indexOf("histam") > -1) { lbl.setAttribute("font-weight", "600"); }
+      svg.appendChild(lbl);
+      HEAT[g].forEach((v, j) => {
+        const x = L + j * (cw + gap);
+        const r = el("rect", { x, y, width: cw, height: ch, rx: "2", fill: scale(v) });
+        hoverable(r, `<b>${g}</b><br>${MES_ABREV[j]} · índice ${v}<br>${v > 100 ? (v - 100) + "% acima" : (100 - v) + "% abaixo"} da média da categoria`);
+        svg.appendChild(r);
+        const t = txt(v, x + cw / 2, y + ch / 2 + 4, "vlbl", "middle");
+        t.setAttribute("fill", inkFor(v)); t.setAttribute("font-size", "10.5");
+        svg.appendChild(t);
+      });
+    });
+
+    const yT = T + 5 * (ch + gap) + 6;
+    svg.appendChild(txt("Total da farmácia", L - 10, yT + ch / 2 + 4, "slbl", "end"));
+    GERAL_MES.forEach((v, j) => {
+      const x = L + j * (cw + gap);
+      const r = el("rect", { x, y: yT, width: cw, height: ch, rx: "2", fill: "none", stroke: cssv("--line-2"), "stroke-width": "1" });
+      hoverable(r, `<b>Total da farmácia</b><br>${MES_ABREV[j]} · índice ${v}`);
+      svg.appendChild(r);
+      const t = txt(v, x + cw / 2, yT + ch / 2 + 4, "vlbl", "middle");
+      t.setAttribute("font-size", "10.5");
+      if (j === 9) { t.setAttribute("fill", cssv("--ink")); t.setAttribute("font-weight", "600"); }
+      svg.appendChild(t);
+    });
+  }
+
+  /* ------------------------------------------------------ 2 · tipo de dia */
+  function tipoDia() {
+    const svg = document.getElementById("c-dia");
+    const T = 8, bh = 22, gap = 24, maxBar = 250, max = 1200;
+    DIA.forEach((d, i) => {
+      const y = T + i * (bh + gap);
+      svg.appendChild(txt(d.nome, 0, y + 9, "slbl"));
+      const w = (d.valor / max) * maxBar;
+      const bar = el("rect", { x: 0, y: y + 15, width: w, height: 11, rx: "4", fill: i === 0 ? cssv("--s3") : cssv("--s1"), opacity: i === 2 ? ".6" : ".92" });
+      hoverable(bar, `<b>${d.nome}</b><br>R$ ${brl(d.valor, 2)} por dia<br>${brl(d.dias)} dias na série`);
+      svg.appendChild(bar);
+      svg.appendChild(txt("R$ " + brl(d.valor, 2), w + 8, y + 25, "vlbl"));
+      svg.appendChild(txt(brl(d.dias) + " dias", 420, y + 9, "ax", "end"));
+    });
+  }
+
+  /* ------------------------------------------------------ 2 · fornecedores */
+  function fornScatter() {
+    const svg = document.getElementById("c-forn");
+    const L = 46, R = 22, T = 16, B = 40, W = 520, H = 250;
+    const iw = W - L - R, ih = H - T - B;
+    const x = p => L + ((p - 1.4) / 4.2) * iw;
+    const y = m => T + ih - ((m - 17) / 20) * ih;
+
+    [20, 25, 30, 35].forEach(m => {
+      svg.appendChild(el("line", { x1: L, x2: W - R, y1: y(m), y2: y(m), class: "gridline" }));
+      svg.appendChild(txt(m + "%", L - 8, y(m) + 3.5, "ax", "end"));
+    });
+    [2, 3, 4, 5].forEach(p => svg.appendChild(txt(p + " dias", x(p), H - 20, "ax", "middle")));
+    svg.appendChild(txt("prazo de entrega →", W - R, H - 5, "ax", "end"));
+    svg.appendChild(txt("↑ margem", L - 8, T + 4, "ax", "end"));
+
+    // quadrante de referência: melhor prazo e melhor margem que a média
+    svg.appendChild(el("rect", { x: x(1.4), y: y(37), width: x(3) - x(1.4), height: y(28.4) - y(37), fill: cssv("--tarja-verde"), opacity: ".07" }));
+    const q = txt("quadrante alvo", x(1.5), y(36.2), "ax");
+    q.setAttribute("fill", cssv("--tarja-verde")); svg.appendChild(q);
+
+    FORN.forEach(f => {
+      const [nome, local, prazo, share, margem, capital, classe] = f;
+      const r = 5 + Math.sqrt(share) * 2.6;
+      const cor = classe === "Parceiro Modelo" ? cssv("--tarja-verde")
+        : classe === "Revisar Contrato" ? cssv("--tarja-vermelha")
+        : classe === "Renegociar Preço" ? cssv("--tarja-ambar") : cssv("--s1");
+      const c = el("circle", { cx: x(prazo), cy: y(margem), r, fill: cor, "fill-opacity": ".24", stroke: cor, "stroke-width": "2" });
+      hoverable(c, `<b>${nome}</b> · ${local}<br>Prazo ${prazo} dias · margem ${brl(margem, 1)}%<br>Share ${brl(share, 1)}% · trava R$ ${brl(capital, 2)}`);
+      svg.appendChild(c);
+      const acima = (nome === "Eurofarma" || nome === "Cristália" || nome === "Hypera Pharma");
+      const off = acima ? -(r + 8) : (r + 7);
+      const t = txt(nome, x(prazo), y(margem) + off + (off < 0 ? 0 : 4), "slbl", "middle");
+      t.setAttribute("font-size", "11");
+      svg.appendChild(t);
+    });
+  }
+
+  /* ------------------------------------------------------- 3 · meta × ano */
+  function metaChart() {
+    const svg = document.getElementById("c-meta");
+    const L = 46, R = 12, T = 26, B = 54, W = 620, H = 250;
+    const iw = W - L - R, ih = H - T - B;
+    const max = 480000, bw = 22, grp = iw / ANO.length;
+    const y = v => T + ih - (v / max) * ih;
+
+    [0, 120000, 240000, 360000, 480000].forEach(v => {
+      svg.appendChild(el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "gridline" }));
+      svg.appendChild(txt(v / 1000, L - 8, y(v) + 3.5, "ax", "end"));
+    });
+
+    ANO.forEach((a, i) => {
+      const [ano, meta, real, batidos, meses] = a;
+      const cx = L + grp * i + grp / 2;
+      const x1 = cx - bw - 1, x2 = cx + 1;
+
+      const b1 = el("rect", { x: x1, y: y(meta), width: bw, height: T + ih - y(meta), rx: "4", fill: cssv("--s1") });
+      hoverable(b1, `<b>${ano}</b> · meta<br>R$ ${brl(meta)}`);
+      svg.appendChild(b1);
+      const b2 = el("rect", { x: x2, y: y(real), width: bw, height: T + ih - y(real), rx: "4", fill: cssv("--s2") });
+      const pct = (real / meta * 100);
+      hoverable(b2, `<b>${ano}</b> · realizado<br>R$ ${brl(real)}<br>${brl(pct, 1)}% da meta · ${batidos}/${meses} meses`);
+      svg.appendChild(b2);
+
+      const p = txt(brl(pct, 1) + "%", cx, y(Math.max(meta, real)) - 8, "vlbl", "middle");
+      p.setAttribute("fill", pct >= 100 ? cssv("--tarja-verde") : pct >= 97 ? cssv("--tarja-ambar") : cssv("--tarja-vermelha"));
+      p.setAttribute("font-weight", "600");
+      svg.appendChild(p);
+
+      svg.appendChild(txt(ano, cx, T + ih + 16, "slbl", "middle"));
+      const mb = txt(batidos + "/" + meses + " meses", cx, T + ih + 31, "ax", "middle");
+      mb.setAttribute("fill", batidos / meses >= 0.5 ? cssv("--ink-3") : cssv("--tarja-vermelha"));
+      svg.appendChild(mb);
+    });
+
+    svg.appendChild(el("line", { x1: L, x2: W - R, y1: T + ih, y2: T + ih, stroke: cssv("--line-2"), "stroke-width": "1" }));
+  }
+
+  /* ---------------------------------------------------- 3 · flip do turno */
+  function flipChart() {
+    const svg = document.getElementById("c-flip");
+    const H = 210;
+    const panels = [
+      { x: 0,   w: 116, titulo: "Receita absoluta", key: "receita", max: 900000, fmt: v => "R$ " + brl(v / 1000) + " mil", nota: "a noite parece a pior" },
+      { x: 250, w: 116, titulo: "Receita por hora", key: "porHora", max: 100,    fmt: v => "R$ " + brl(v, 2),             nota: "a noite lidera" }
+    ];
+
+    panels.forEach(p => {
+      const t = txt(p.titulo, p.x, 12, "slbl");
+      t.setAttribute("font-weight", "600"); svg.appendChild(t);
+      const n = txt(p.nota, p.x, 27, "ax");
+      n.setAttribute("fill", p.key === "porHora" ? cssv("--tarja-verde") : cssv("--tarja-vermelha"));
+      svg.appendChild(n);
+
+      const ordenado = [...TURNO].sort((a, b) => b[p.key] - a[p.key]);
+      ordenado.forEach((t2, i) => {
+        const y = 44 + i * 50;
+        svg.appendChild(txt(t2.nome + " · " + t2.horas + " h", p.x, y + 9, "slbl"));
+        const w = (t2[p.key] / p.max) * p.w;
+        const destaque = t2.nome === "Noite";
+        const bar = el("rect", { x: p.x, y: y + 15, width: w, height: 11, rx: "4", fill: destaque ? cssv("--s2") : cssv("--s1"), opacity: destaque ? "1" : ".7" });
+        hoverable(bar, `<b>${t2.nome}</b> · ${t2.horas} h<br>${p.fmt(t2[p.key])}`);
+        svg.appendChild(bar);
+        const v = txt(p.fmt(t2[p.key]), p.x + w + 8, y + 25, "vlbl");
+        if (destaque) { v.setAttribute("fill", cssv("--ink")); v.setAttribute("font-weight", "600"); }
+        svg.appendChild(v);
+      });
+    });
+
+    svg.appendChild(el("line", { x1: 228, x2: 228, y1: 4, y2: H - 12, stroke: cssv("--line"), "stroke-width": "1" }));
+  }
+
+  /* ------------------------------------------------------- 3 · 2019 × 2018 */
+  function d2019Chart() {
+    const svg = document.getElementById("c-2019");
+    const L = 40, R = 10, T = 16, B = 34, W = 460, H = 210;
+    const iw = W - L - R, ih = H - T - B;
+    const max = 2000;
+    const x = i => L + (i / 9) * iw;
+    const y = v => T + ih - (v / max) * ih;
+
+    [0, 500, 1000, 1500, 2000].forEach(v => {
+      svg.appendChild(el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "gridline" }));
+      svg.appendChild(txt(brl(v), L - 7, y(v) + 3.5, "ax", "end"));
+    });
+
+    const linha = (idx, cor, dash) => {
+      let d = "";
+      D2019.forEach((r, i) => { d += (i ? " L " : "M ") + x(i) + " " + y(r[idx]); });
+      svg.appendChild(el("path", { d, fill: "none", stroke: cor, "stroke-width": "2", "stroke-linejoin": "round", "stroke-linecap": "round", "stroke-dasharray": dash || "none" }));
+    };
+    linha(2, cssv("--s1"), "4 4");
+    linha(1, cssv("--s2"));
+
+    D2019.forEach((r, i) => {
+      svg.appendChild(el("circle", { cx: x(i), cy: y(r[1]), r: "4.5", fill: cssv("--s2"), stroke: cssv("--surface"), "stroke-width": "2" }));
+      svg.appendChild(txt(MES_ABREV[i], x(i), T + ih + 16, "ax", "middle"));
+      const hit = el("rect", { x: x(i) - iw / 20, y: T, width: iw / 10, height: ih, fill: "transparent" });
+      hoverable(hit, `<b>${MES_ABREV[i]}</b><br>2019 · R$ ${brl(r[1])}/dia<br>2018 · R$ ${brl(r[2])}/dia`);
+      svg.appendChild(hit);
+    });
+
+    // destaque no ponto de outubro
+    const last = D2019.length - 1;
+    svg.appendChild(el("circle", { cx: x(last), cy: y(D2019[last][1]), r: "8", fill: "none", stroke: cssv("--tarja-verde"), "stroke-width": "2" }));
+    const lo = txt("out · 8 dias, R$ 1.147/dia", x(last) - 12, y(D2019[last][1]) - 22, "vlbl", "end");
+    lo.setAttribute("fill", cssv("--tarja-verde")); lo.setAttribute("font-weight", "600");
+    svg.appendChild(lo);
+  }
+
+  /* --------------------------------------------------------- 3 · what-if */
+  function whatIf() {
+    const sl = document.getElementById("sl");
+    const DIAS = 361, ATEN = 0.7, REC_H = 88.96, LUC_H = 26.05;
+    function upd() {
+      const h = +sl.value;
+      document.getElementById("wf-rec").textContent = h ? "R$ " + brl(REC_H * h * DIAS * ATEN) : "—";
+      document.getElementById("wf-luc").textContent = h ? "R$ " + brl(LUC_H * h * DIAS * ATEN) : "—";
+      document.getElementById("wf-hora").textContent = (22 + h) + "h00";
+    }
+    sl.addEventListener("input", upd);
+    upd();
+  }
+
+  /* ------------------------------------------------------------- tabelas */
+  function tabelas() {
+    document.getElementById("tb-pagto").innerHTML = PAGTO.map(p =>
+      `<tr><td class="nm">${p[0]}</td><td class="num">${brl(p[1])}</td><td class="num">${brl(p[2])}</td><td class="num">${brl(p[3], 2)}</td><td class="num">${brl(p[4], 2)}</td></tr>`
+    ).join("");
+
+    document.getElementById("tb-prod").innerHTML = PROD.map(p => {
+      const cls = p[5] === "Âncora de Lucro" ? "p-verde" : "p-neutro";
+      return `<tr><td class="nm">${p[0]}</td><td>${p[1]}</td><td class="num">${brl(p[2])}</td><td class="num">${brl(p[3])}</td><td class="num">${brl(p[4], 1)}%</td><td><span class="pill ${cls}">${p[5]}</span></td></tr>`;
+    }).join("");
+
+    document.getElementById("tb-forn").innerHTML = FORN.map(f =>
+      `<tr><td class="nm">${f[0]}</td><td>${f[1]}</td><td class="num">${f[2]} d</td><td class="num">${brl(f[3], 1)}%</td><td class="num">${brl(f[4], 1)}%</td><td class="num">R$ ${brl(f[5], 2)}</td><td><span class="pill ${f[7]}">${f[6]}</span></td></tr>`
+    ).join("");
+  }
+
+  /* ------------------------------------------------------------ navegação */
+  function nav() {
+    const tabs = [...document.querySelectorAll('.pagenav button')];
+    tabs.forEach(tab => tab.addEventListener("click", () => {
+      tabs.forEach(t => {
+        const painel = document.getElementById(t.getAttribute("aria-controls"));
+        const ativo = t === tab;
+        t.setAttribute("aria-selected", ativo ? "true" : "false");
+        painel.hidden = !ativo;
+      });
+      hideTip();
+      window.scrollTo({ top: document.querySelector(".pagenav").offsetTop - 8, behavior: "smooth" });
+    }));
+  }
+
+  /* --------------------------------------------------------------- start */
+  serieMensal(); grupoChart(); turnoAbs();
+  heatmap(); tipoDia(); fornScatter();
+  metaChart(); flipChart(); d2019Chart(); whatIf();
+  tabelas(); nav();
+})();
+</script>
+</body></html>

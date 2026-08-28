@@ -1,0 +1,74 @@
+/// Catalogo de 33 medicamentos.
+table d_produto
+	lineageTag: 72cc3277-7e0b-4bb6-a3be-e0101a9bec34
+
+	column produto_id
+		dataType: int64
+		isHidden
+		lineageTag: c37644d7-b4a0-412a-93c8-578d1db35817
+		summarizeBy: none
+		sourceColumn: produto_id
+
+	column nome_produto
+		dataType: string
+		lineageTag: acf9b806-66b8-49cd-a16e-c9ec733868d3
+		sourceColumn: nome_produto
+
+	column codigo_atc
+		dataType: string
+		lineageTag: df6ecf50-e02d-4cd8-942d-d8b9ce503bec
+		sourceColumn: codigo_atc
+
+	column categoria
+		dataType: string
+		lineageTag: b42d43c1-9ebe-4044-a21f-e656dc5c609d
+		sourceColumn: categoria
+
+	column grupo_terapeutico
+		dataType: string
+		lineageTag: e0dddc72-0fa9-47ae-b8ba-5e0d8721bb2b
+		sourceColumn: grupo_terapeutico
+
+	/// Preco de TABELA. Oculto: o preco praticado esta em f_vendas e varia +-5%.
+	column preco_unitario
+		dataType: double
+		isHidden
+		lineageTag: e8e2f5ad-ca82-49a3-8b09-9d1edca0545c
+		summarizeBy: none
+		sourceColumn: preco_unitario
+
+	column custo_unitario
+		dataType: double
+		isHidden
+		lineageTag: 44adbf51-3321-4248-8bd5-e970560550a6
+		summarizeBy: none
+		sourceColumn: custo_unitario
+
+	column margem_percentual
+		dataType: double
+		isHidden
+		lineageTag: f8e855f0-e296-4a3e-bc86-e8ec220881b8
+		summarizeBy: none
+		sourceColumn: margem_percentual
+
+	column exige_receita
+		dataType: int64
+		isHidden
+		lineageTag: 5de34abb-2809-456a-b8c3-79d20c010d65
+		summarizeBy: none
+		sourceColumn: exige_receita
+
+	/// Controlados tem margem estruturalmente menor.
+	column 'Tipo de Venda' = IF ( d_produto[exige_receita] = 1, "Controlado", "Venda Livre" )
+		dataType: string
+		lineageTag: 5f1970c2-efdc-41db-acf5-c02efbba04ee
+
+	partition d_produto = m
+		mode: import
+		source =
+				let
+				    Fonte = Sql.Database(Servidor, Banco),
+				    Origem = Fonte{[Schema="dbo",Item="d_produto"]}[Data]
+				in
+				    Origem
+

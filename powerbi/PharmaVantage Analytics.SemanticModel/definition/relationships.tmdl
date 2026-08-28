@@ -1,0 +1,24 @@
+relationship 'R1 f_vendas[data] -> d_calendario[data]'
+	fromColumn: f_vendas.data
+	toColumn: d_calendario.data
+
+relationship 'R2 f_vendas[produto_id] -> d_produto[produto_id]'
+	fromColumn: f_vendas.produto_id
+	toColumn: d_produto.produto_id
+
+relationship 'R3 f_vendas[fornecedor_id] -> d_fornecedor[fornecedor_id]'
+	fromColumn: f_vendas.fornecedor_id
+	toColumn: d_fornecedor.fornecedor_id
+
+relationship 'R4 f_vendas[turno_id] -> d_turno[turno_id]'
+	fromColumn: f_vendas.turno_id
+	toColumn: d_turno.turno_id
+
+relationship 'R5 d_calendario[PeriodoKey] -> d_periodo[PeriodoKey]'
+	fromColumn: d_calendario.PeriodoKey
+	toColumn: d_periodo.PeriodoKey
+
+relationship 'R6 f_meta_mensal[PeriodoKey] -> d_periodo[PeriodoKey]'
+	fromColumn: f_meta_mensal.PeriodoKey
+	toColumn: d_periodo.PeriodoKey
+

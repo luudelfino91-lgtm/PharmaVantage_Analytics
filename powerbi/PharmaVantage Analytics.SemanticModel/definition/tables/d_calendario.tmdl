@@ -1,0 +1,101 @@
+/// Dimensao de datas. Marcada como Tabela de Datas.
+table d_calendario
+	lineageTag: 3d329334-ffc3-4e10-bb6c-2e2cdf49e270
+	dataCategory: Time
+
+	column data
+		dataType: dateTime
+		isUnique
+		formatString: dd/mm/yyyy
+		lineageTag: b1448575-b69f-47c0-b33c-6395a0991d7c
+		summarizeBy: none
+		sourceColumn: data
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ano
+		dataType: int64
+		lineageTag: 15950954-4fed-4d34-96c5-2a3bc99f9783
+		summarizeBy: none
+		sourceColumn: ano
+
+	column mes
+		dataType: int64
+		isHidden
+		lineageTag: 0f820805-faee-459d-ac4d-e96959694c62
+		summarizeBy: none
+		sourceColumn: mes
+
+	column nome_mes
+		dataType: string
+		lineageTag: 6fda05c1-0688-480e-8b6e-38d97463f8e6
+		sourceColumn: nome_mes
+		sortByColumn: mes
+
+	column trimestre
+		dataType: int64
+		lineageTag: 3a4a0922-ca27-42c7-9e7d-6b5ff53e33b2
+		summarizeBy: none
+		sourceColumn: trimestre
+
+	column semestre
+		dataType: int64
+		lineageTag: 7a27864b-5ba9-44bb-94a4-237599cc30c3
+		summarizeBy: none
+		sourceColumn: semestre
+
+	column dia_semana
+		dataType: int64
+		isHidden
+		lineageTag: 27fc1c58-2ee1-4d62-86d3-3762dd3c957c
+		summarizeBy: none
+		sourceColumn: dia_semana
+
+	column nome_dia_semana
+		dataType: string
+		lineageTag: 07607269-b67c-4ede-bc87-c3c545019643
+		sourceColumn: nome_dia_semana
+		sortByColumn: dia_semana
+
+	column is_fim_semana
+		dataType: int64
+		isHidden
+		lineageTag: 64cd28d2-8b93-4970-a103-c86c036e958c
+		summarizeBy: none
+		sourceColumn: is_fim_semana
+
+	column is_feriado
+		dataType: int64
+		isHidden
+		lineageTag: b5272512-1f6a-498f-bf80-bbde0f00c195
+		summarizeBy: none
+		sourceColumn: is_feriado
+
+	/// Chave logica ano*100+mes. Liga o calendario a d_periodo.
+	column PeriodoKey = d_calendario[ano] * 100 + d_calendario[mes]
+		dataType: int64
+		isHidden
+		lineageTag: 0380fa56-766a-49ec-b16b-0fb9012b137f
+		summarizeBy: none
+
+	/// Resolve a DOR 6 num campo legivel. ATENCAO: feriados moveis (Carnaval, Sexta-Feira Santa, Corpus Christi) NAO constam da base e aparecem como Dia Util.
+	column 'Tipo de Dia' =
+			SWITCH (
+			    TRUE (),
+			    d_calendario[is_feriado] = 1,     "Feriado",
+			    d_calendario[is_fim_semana] = 1,  "Fim de Semana",
+			    "Dia Útil"
+			)
+		dataType: string
+		lineageTag: ef3d8e3a-3860-4f21-aa8d-10b28f808b2f
+
+	partition d_calendario = m
+		mode: import
+		source =
+				let
+				    Fonte = Sql.Database(Servidor, Banco),
+				    Origem = Fonte{[Schema="dbo",Item="d_calendario"]}[Data],
+				    Tipado = Table.TransformColumnTypes(Origem, {{"data", type date}}, "en-US")
+				in
+				    Tipado
+

@@ -1,0 +1,12 @@
+/// Instância do SQL Server. Trocar aqui muda a origem de todas as tabelas.
+expression Servidor = "localhost" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 30f545bc-3a0e-4bc4-b176-94580067bb23
+
+	annotation PBI_ResultType = Text
+
+/// Nome do banco de dados.
+expression Banco = "farma_xperiun" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: c5c019ac-d87f-4f78-8673-3aa004d3886d
+
+	annotation PBI_ResultType = Text
+

@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+~$*
+
+# Power BI Desktop local/user-specific files (not meant for source control)
+**/.pbi/cache.abf
+**/.pbi/localSettings.json
+**/.pbi/editorSettings.json
+
+# scratch backup made during model debugging, not part of the current project
+powerbi/_backup_SemanticModel_antes/

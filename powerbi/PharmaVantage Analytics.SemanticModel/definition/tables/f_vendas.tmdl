@@ -1,0 +1,104 @@
+/// Fato transacional. 1 linha = 1 item de venda.
+table f_vendas
+	lineageTag: e55dc1cf-7df8-4353-9507-ac4ee90dcfe4
+
+	column venda_id
+		dataType: int64
+		isHidden
+		lineageTag: 324a5fcb-7287-4cf6-b5cc-a79225bf34a8
+		summarizeBy: none
+		sourceColumn: venda_id
+
+	column data
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: 42083423-d5c3-412e-8a80-1030e17577bf
+		summarizeBy: none
+		sourceColumn: data
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column hora
+		dataType: int64
+		lineageTag: e6bc293c-f9af-471d-8f9c-e3fee3dae575
+		summarizeBy: none
+		sourceColumn: hora
+
+	column turno_id
+		dataType: int64
+		isHidden
+		lineageTag: 802bd6ab-d371-4d07-b94f-fc7d01600c52
+		summarizeBy: none
+		sourceColumn: turno_id
+
+	column produto_id
+		dataType: int64
+		isHidden
+		lineageTag: 598c5443-0552-4a36-b8ab-72de5bdaf7c1
+		summarizeBy: none
+		sourceColumn: produto_id
+
+	column fornecedor_id
+		dataType: int64
+		isHidden
+		lineageTag: 2e3e7a16-023b-4ec3-a282-761bb1436f12
+		summarizeBy: none
+		sourceColumn: fornecedor_id
+
+	column quantidade
+		dataType: double
+		lineageTag: b5b28739-c0b0-4efd-8cf9-e4bc0c7d7ea3
+		summarizeBy: none
+		sourceColumn: quantidade
+
+	column preco_unitario
+		dataType: double
+		lineageTag: a0403c4f-e4ff-4372-b8a0-5b5dc7c87393
+		summarizeBy: none
+		sourceColumn: preco_unitario
+
+	column receita_bruta
+		dataType: double
+		lineageTag: 56526beb-84ba-42fc-85ed-3cbd73d53b15
+		summarizeBy: none
+		sourceColumn: receita_bruta
+
+	column desconto
+		dataType: double
+		lineageTag: 916fabc4-d8e5-4d6d-ae2d-8a1ae243e0da
+		summarizeBy: none
+		sourceColumn: desconto
+
+	column receita_liquida
+		dataType: double
+		lineageTag: 538f3632-16b8-4ee9-b3fe-f49bc2a330ee
+		summarizeBy: none
+		sourceColumn: receita_liquida
+
+	column custo_total
+		dataType: double
+		lineageTag: 133747a6-f417-402f-8e49-6470ef4c23ce
+		summarizeBy: none
+		sourceColumn: custo_total
+
+	column lucro
+		dataType: double
+		lineageTag: dc198903-d6e8-42d0-9c08-09b3bfb1aad6
+		summarizeBy: none
+		sourceColumn: lucro
+
+	column forma_pagamento
+		dataType: string
+		lineageTag: 7ee58baa-2a2c-473d-b56a-137fec9d0f57
+		sourceColumn: forma_pagamento
+
+	partition f_vendas = m
+		mode: import
+		source =
+				let
+				    Fonte = Sql.Database(Servidor, Banco),
+				    Origem = Fonte{[Schema="dbo",Item="f_vendas"]}[Data],
+				    Tipado = Table.TransformColumnTypes(Origem, {{"data", type date}}, "en-US")
+				in
+				    Tipado
+

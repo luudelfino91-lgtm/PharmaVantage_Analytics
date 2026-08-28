@@ -1,0 +1,55 @@
+/// Fato de orcamento em grao mensal. Origem: dbo.d_meta_mensal, renomeada porque contem medidas aditivas e descreve um evento de planejamento - nao e dimensao.
+table f_meta_mensal
+	lineageTag: 7aeec406-74a7-41bd-a732-aa6098a50ac9
+
+	column meta_id
+		dataType: int64
+		isHidden
+		lineageTag: 3ed4e787-f2fc-4aab-aa5c-02559255ebdd
+		summarizeBy: none
+		sourceColumn: meta_id
+
+	column ano
+		dataType: int64
+		isHidden
+		lineageTag: 86b10fb2-b3dc-4242-95e3-e4d166fc00dd
+		summarizeBy: none
+		sourceColumn: ano
+
+	column mes
+		dataType: int64
+		isHidden
+		lineageTag: c7f326b5-b93d-49b2-9c57-59078acf7494
+		summarizeBy: none
+		sourceColumn: mes
+
+	column meta_receita
+		dataType: double
+		lineageTag: 5957aa44-43af-4f1a-8f2b-9c7323b52ede
+		summarizeBy: none
+		sourceColumn: meta_receita
+
+	column meta_quantidade
+		dataType: int64
+		lineageTag: c85e9206-bdd8-4f62-93ce-50fad6a8d4d5
+		summarizeBy: none
+		sourceColumn: meta_quantidade
+
+	/// Chave logica ano*100+mes. Liga a meta a d_periodo.
+	column PeriodoKey = f_meta_mensal[ano] * 100 + f_meta_mensal[mes]
+		dataType: int64
+		isHidden
+		lineageTag: 9de4697d-cc5a-4650-99ad-b22927eb372b
+		summarizeBy: none
+
+	partition f_meta_mensal = m
+		mode: import
+		source =
+				let
+				    Fonte = Sql.Database(Servidor, Banco),
+				    Origem = Fonte{[Schema="dbo",Item="d_meta_mensal"]}[Data]
+				in
+				    Origem
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,123 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "name": "d6ec416ca45ac16f6ece",
+  "position": {
+    "x": 1300,
+    "y": 250,
+    "z": 7000,
+    "height": 400,
+    "width": 560,
+    "tabOrder": 7000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "d_turno"
+                    }
+                  },
+                  "Property": "nome_turno"
+                }
+              },
+              "queryRef": "d_turno.nome_turno",
+              "nativeQueryRef": "nome_turno"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Receita por Hora"
+                }
+              },
+              "queryRef": "_Medidas.Receita por Hora",
+              "nativeQueryRef": "Receita por Hora"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Transações por Hora"
+                }
+              },
+              "queryRef": "_Medidas.Transações por Hora",
+              "nativeQueryRef": "Transações por Hora"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Índice de Produtividade do Turno"
+                }
+              },
+              "queryRef": "_Medidas.Índice de Produtividade do Turno",
+              "nativeQueryRef": "Índice de Produtividade do Turno"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "columnHeaders": [
+        {
+          "properties": {
+            "columnAdjustment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'growToFit'"
+                }
+              }
+            },
+            "autoSizeColumnWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Shift Performance'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

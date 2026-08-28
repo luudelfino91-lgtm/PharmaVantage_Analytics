@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "PharmaVantage Analytics"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "29cdc42d-14c4-4082-82b3-e2a33bfa7683"
+  }
+}

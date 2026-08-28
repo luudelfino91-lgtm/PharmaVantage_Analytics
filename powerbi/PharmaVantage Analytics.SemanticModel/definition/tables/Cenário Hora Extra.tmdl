@@ -1,0 +1,13 @@
+/// Parametro What-If (0 a 3 horas). Alimenta a simulacao de extensao do turno da noite.
+table 'Cenário Hora Extra'
+	lineageTag: 26bdb11a-e89a-4301-9fe4-f401ee514ee6
+
+	column Horas
+		lineageTag: efbd6053-c7b5-4edc-a582-5ec16a337955
+		isNameInferred
+		sourceColumn: [Horas]
+
+	partition 'Cenário Hora Extra' = calculated
+		mode: import
+		source = SELECTCOLUMNS ( GENERATESERIES ( 0, 3, 1 ), "Horas", [Value] )
+

@@ -1,0 +1,43 @@
+/// 3 turnos com duracoes diferentes: manha e tarde 5h, noite 4h.
+table d_turno
+	lineageTag: 1d2291a3-c4d6-48a9-b09e-e82630aa66d3
+
+	column turno_id
+		dataType: int64
+		isHidden
+		lineageTag: 7427ec06-ff31-4b51-a0a9-b49d2059506b
+		summarizeBy: none
+		sourceColumn: turno_id
+
+	column nome_turno
+		dataType: string
+		lineageTag: f852e16a-783f-4ebf-a9ef-6562a30fb419
+		sourceColumn: nome_turno
+
+	column hora_inicio
+		dataType: int64
+		lineageTag: 43993fb0-ea61-4098-9503-3fda5ee0910c
+		summarizeBy: none
+		sourceColumn: hora_inicio
+
+	column hora_fim
+		dataType: int64
+		lineageTag: f8d48baa-b704-422a-919b-523709a36c06
+		summarizeBy: none
+		sourceColumn: hora_fim
+
+	/// Coracao das medidas normalizadas por hora. Corrige o vies de comparar turnos de 4h e 5h.
+	column 'Duração do Turno (h)' = d_turno[hora_fim] - d_turno[hora_inicio]
+		dataType: int64
+		lineageTag: 6a02aad7-cd0d-498c-8d03-27de80428c22
+		summarizeBy: none
+
+	partition d_turno = m
+		mode: import
+		source =
+				let
+				    Fonte = Sql.Database(Servidor, Banco),
+				    Origem = Fonte{[Schema="dbo",Item="d_turno"]}[Data]
+				in
+				    Origem
+

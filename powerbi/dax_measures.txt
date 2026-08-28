@@ -1,0 +1,621 @@
+/* =====================================================================================
+   FARMA XPERIUN | BIBLIOTECA DE MEDIDAS DAX
+   Fase 3 · Power BI · Padrão PL-300
+   -------------------------------------------------------------------------------------
+   PREMISSAS DO MODELO (ver powerbi/star_schema.md)
+     · Todas as medidas residem na tabela desconectada _Medidas
+     · d_calendario está marcada como Tabela de Datas
+     · d_periodo é dimensão conformada 1:N para d_calendario e para f_meta_mensal
+     · Todos os relacionamentos são 1:N com filtro cruzado SIMPLES
+     · d_turno[Duração do Turno (h)] = hora_fim - hora_inicio  (coluna calculada)
+     · d_calendario[Tipo de Dia] = "Dia Útil" | "Fim de Semana" | "Feriado"
+
+   CONVENÇÕES
+     · VAR obrigatório em todo cálculo com mais de uma etapa lógica
+     · Prefixo "_" em variáveis; "@" em colunas de tabelas virtuais
+     · DIVIDE() sempre — nunca o operador "/" — para blindar divisão por zero
+     · Toda medida traz o racional de negócio e a dor da Fase 1 que ela endereça
+   ===================================================================================== */
+
+
+/* =====================================================================================
+   PASTA 01 · BASE — Agregações fundamentais
+   ===================================================================================== */
+
+Receita Bruta =
+SUM ( f_vendas[receita_bruta] )
+// Format: R$ #.##0,00  |  Faturamento antes de descontos.
+
+Desconto Concedido =
+SUM ( f_vendas[desconto] )
+// Format: R$ #.##0,00
+
+Receita Líquida =
+SUM ( f_vendas[receita_liquida] )
+// Format: R$ #.##0,00
+// MEDIDA CANÔNICA DE RECEITA. Toda análise financeira parte daqui.
+// Nunca recalcular receita a partir de d_produto: o preço praticado varia ±5%
+// face ao preço de tabela, e o valor real da transação está em f_vendas.
+
+Custo da Mercadoria =
+SUM ( f_vendas[custo_total] )
+// Format: R$ #.##0,00
+
+Lucro =
+SUM ( f_vendas[lucro] )
+// Format: R$ #.##0,00
+
+Quantidade Vendida =
+SUM ( f_vendas[quantidade] )
+// Format: #.##0,0   (fracionada por natureza — frações de caixa)
+
+Transações =
+COUNTROWS ( f_vendas )
+// Format: #.##0
+
+Dias Operados =
+DISTINCTCOUNT ( f_vendas[data] )
+// Format: #.##0
+// Denominador honesto para qualquer comparação temporal. É esta medida que
+// impede a leitura errada de outubro/2019 (mês parcial de 8 dias).
+
+
+/* =====================================================================================
+   PASTA 02 · KPIs — Indicadores derivados
+   ===================================================================================== */
+
+Ticket Médio =
+VAR _Receita = [Receita Líquida]
+VAR _Transacoes = [Transações]
+RETURN
+    DIVIDE ( _Receita, _Transacoes )
+// Format: R$ #.##0,00
+// DOR 1 e 4. O atingimento de quantidade é estável (95,7% a 98,3% em todos os anos)
+// enquanto o de receita oscila — logo é o ticket, não o fluxo, que move o resultado.
+
+Margem % =
+VAR _Lucro = [Lucro]
+VAR _Receita = [Receita Líquida]
+RETURN
+    DIVIDE ( _Lucro, _Receita )
+// Format: 0,0%
+
+Desconto % =
+VAR _Desconto = [Desconto Concedido]
+VAR _Bruta = [Receita Bruta]
+RETURN
+    DIVIDE ( _Desconto, _Bruta )
+// Format: 0,00%
+// DOR 7. Os descontos estão corroendo margem ou atraindo volume?
+
+Receita por Dia Operado =
+VAR _Receita = [Receita Líquida]
+VAR _Dias = [Dias Operados]
+RETURN
+    DIVIDE ( _Receita, _Dias )
+// Format: R$ #.##0,00
+// DOR 5. A única base justa para comparar meses de tamanhos diferentes.
+// Outubro/2019 tem 8 dias: em valor absoluto parece colapso, por dia operado
+// (R$ 1.146,90) está ACIMA de junho, julho, agosto e setembro do mesmo ano.
+
+% Receita Controlados =
+VAR _Controlados =
+    CALCULATE ( [Receita Líquida], d_produto[exige_receita] = 1 )
+VAR _Total = [Receita Líquida]
+RETURN
+    DIVIDE ( _Controlados, _Total )
+// Format: 0,0%
+// DOR 8. Medicamentos controlados têm margem estruturalmente menor
+// (Sistema Nervoso 23,2% vs. Analgésicos 38,9%). Saber onde eles se concentram
+// explica variação de margem sem precisar descer ao produto.
+
+
+/* =====================================================================================
+   PASTA 03 · METAS — Planejado vs. Realizado
+   DOR 4: o maior ponto cego da diretoria. Seis anos analisando ambição,
+          nenhum comparando com entrega.
+   ===================================================================================== */
+
+Meta Receita =
+SUM ( f_meta_mensal[meta_receita] )
+// Format: R$ #.##0,00
+
+Meta Quantidade =
+SUM ( f_meta_mensal[meta_quantidade] )
+// Format: #.##0
+
+% Atingimento Meta =
+VAR _Meta = [Meta Receita]
+VAR _Realizado = [Receita Líquida]
+VAR _GrauDoContexto = ISINSCOPE ( d_calendario[data] )
+VAR _Resultado = DIVIDE ( _Realizado, _Meta )
+RETURN
+    SWITCH (
+        TRUE (),
+        // Não existe meta diária. Exibir um percentual em contexto de dia seria
+        // inventar um número — o modelo se recusa a responder o que não pode.
+        _GrauDoContexto, BLANK (),
+        // Meta zero é ausência de meta, não meta baixa (out/nov/dez de 2019).
+        _Meta <= 0, BLANK (),
+        _Resultado
+    )
+// Format: 0,0%
+
+Gap da Meta =
+VAR _Meta = [Meta Receita]
+VAR _Realizado = [Receita Líquida]
+RETURN
+    IF ( _Meta > 0, _Realizado - _Meta )
+// Format: R$ #.##0,00 ; -R$ #.##0,00
+
+Status da Meta =
+VAR _Atingimento = [% Atingimento Meta]
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( _Atingimento ), "Sem meta definida",
+        _Atingimento >= 1.05,  "▲ Superada",
+        _Atingimento >= 1,     "● Batida",
+        _Atingimento >= 0.95,  "◐ No limite",
+        _Atingimento >= 0.85,  "▼ Abaixo",
+        "✖ Crítica"
+    )
+// Rótulo textual para cartões e tabelas condicionais.
+
+Cor do Status da Meta =
+VAR _Atingimento = [% Atingimento Meta]
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( _Atingimento ), "#8A8F98",
+        _Atingimento >= 1,    "#1F9D6B",
+        _Atingimento >= 0.95, "#C8951B",
+        "#C2483C"
+    )
+// Usar em Formatação condicional → Cor do plano de fundo → Valor do campo.
+
+Meses Batidos =
+VAR _MesesAvaliados =
+    ADDCOLUMNS (
+        SUMMARIZE ( d_periodo, d_periodo[PeriodoKey] ),
+        "@Meta",      [Meta Receita],
+        "@Realizado", [Receita Líquida]
+    )
+VAR _ComMeta = FILTER ( _MesesAvaliados, [@Meta] > 0 )
+VAR _Batidos = FILTER ( _ComMeta, [@Realizado] >= [@Meta] )
+RETURN
+    COUNTROWS ( _Batidos )
+// Format: #.##0
+// Resultado histórico: 31 de 69 meses (45%).
+
+Taxa de Sucesso Mensal =
+VAR _MesesAvaliados =
+    ADDCOLUMNS (
+        SUMMARIZE ( d_periodo, d_periodo[PeriodoKey] ),
+        "@Meta",      [Meta Receita],
+        "@Realizado", [Receita Líquida]
+    )
+VAR _ComMeta   = COUNTROWS ( FILTER ( _MesesAvaliados, [@Meta] > 0 ) )
+VAR _Batidos   = COUNTROWS ( FILTER ( _MesesAvaliados, [@Meta] > 0 && [@Realizado] >= [@Meta] ) )
+RETURN
+    DIVIDE ( _Batidos, _ComMeta )
+// Format: 0,0%
+
+Aderência da Meta ao Realizado =
+/* A DESCOBERTA CENTRAL DA FASE 2.
+   Uma meta genuinamente ambiciosa produz variância: anos de superação e anos de
+   frustração. Na Farma Xperiun o desvio anual entre meta e realizado NUNCA passou
+   de 5,3%, em nenhuma direção, em seis anos. Isso não é pontaria — é a meta sendo
+   calibrada A PARTIR do resultado.
+   Esta medida quantifica o fenômeno: quanto MAIOR o valor, mais a meta se comporta
+   como previsão e menos como alvo. Acima de 95% deve acender alerta de governança. */
+VAR _MesesAvaliados =
+    ADDCOLUMNS (
+        SUMMARIZE ( d_periodo, d_periodo[PeriodoKey] ),
+        "@Meta",      [Meta Receita],
+        "@Realizado", [Receita Líquida]
+    )
+VAR _ComMeta = FILTER ( _MesesAvaliados, [@Meta] > 0 )
+VAR _DesvioMedioAbsoluto =
+    AVERAGEX ( _ComMeta, ABS ( DIVIDE ( [@Realizado] - [@Meta], [@Meta] ) ) )
+RETURN
+    1 - _DesvioMedioAbsoluto
+// Format: 0,0%
+
+Meta Ajustada por Dias Úteis =
+/* DOR 6. As metas são mensais e planas, mas os meses não são iguais: variam em
+   dias úteis, fins de semana e feriados. Um mês com três feriados carrega a mesma
+   meta de um mês sem nenhum — logo parte do "não atingimento" é artefato de
+   calendário, não de desempenho. Esta medida normaliza a meta pelo peso real do mês. */
+VAR _Meta = [Meta Receita]
+VAR _DiasUteisDoMes =
+    CALCULATE (
+        COUNTROWS ( d_calendario ),
+        d_calendario[Tipo de Dia] = "Dia Útil"
+    )
+VAR _DiasUteisMediosPorMes =
+    AVERAGEX (
+        SUMMARIZE ( ALL ( d_calendario ), d_calendario[PeriodoKey] ),
+        CALCULATE (
+            COUNTROWS ( d_calendario ),
+            d_calendario[Tipo de Dia] = "Dia Útil"
+        )
+    )
+VAR _Fator = DIVIDE ( _DiasUteisDoMes, _DiasUteisMediosPorMes )
+RETURN
+    IF ( _Meta > 0, _Meta * _Fator )
+// Format: R$ #.##0,00
+
+% Atingimento Ajustado =
+VAR _MetaAjustada = [Meta Ajustada por Dias Úteis]
+VAR _Realizado = [Receita Líquida]
+RETURN
+    IF ( _MetaAjustada > 0, DIVIDE ( _Realizado, _MetaAjustada ) )
+// Format: 0,0%
+
+
+/* =====================================================================================
+   PASTA 04 · TURNO — Produtividade normalizada
+   DOR 1: comparar um turno de 4h com um de 5h em valor absoluto penaliza a noite
+          por construção. Toda a leitura da diretoria vinha desse viés.
+   ===================================================================================== */
+
+Horas de Operação =
+/* Soma, para cada turno no contexto, dias operados × duração do turno.
+   O SUMX sobre VALUES garante que a medida funcione tanto em linha de turno
+   quanto no total geral, onde as durações são diferentes entre si. */
+VAR _Resultado =
+    SUMX (
+        VALUES ( d_turno[turno_id] ),
+        VAR _Duracao = CALCULATE ( MAX ( d_turno[Duração do Turno (h)] ) )
+        VAR _Dias    = CALCULATE ( DISTINCTCOUNT ( f_vendas[data] ) )
+        RETURN _Duracao * _Dias
+    )
+RETURN
+    _Resultado
+// Format: #.##0
+
+Receita por Hora =
+VAR _Receita = [Receita Líquida]
+VAR _Horas = [Horas de Operação]
+RETURN
+    DIVIDE ( _Receita, _Horas )
+// Format: R$ #.##0,00
+// RESULTADO QUE INVERTE A LEITURA: Noite R$ 88,96 · Manhã R$ 79,70 · Tarde R$ 74,29.
+// A noite aparece em último em receita absoluta apenas porque tem 20% menos tempo.
+
+Lucro por Hora =
+VAR _Lucro = [Lucro]
+VAR _Horas = [Horas de Operação]
+RETURN
+    DIVIDE ( _Lucro, _Horas )
+// Format: R$ #.##0,00
+// Noite R$ 26,05 · Manhã R$ 22,92 · Tarde R$ 21,62. Mesma ordem.
+
+Transações por Hora =
+VAR _Transacoes = [Transações]
+VAR _Horas = [Horas de Operação]
+RETURN
+    DIVIDE ( _Transacoes, _Horas )
+// Format: #.##0,00
+// Noite 3,09 · Manhã 2,99 · Tarde 2,84.
+// ELIMINA a hipótese de "queda de fluxo à noite" levantada no Datacast:
+// o fluxo horário noturno é o MAIOR dos três. Resta a hipótese de custo.
+
+Índice de Produtividade do Turno =
+VAR _ReceitaHoraTurno = [Receita por Hora]
+VAR _ReceitaHoraGeral =
+    CALCULATE ( [Receita por Hora], ALLSELECTED ( d_turno ) )
+RETURN
+    DIVIDE ( _ReceitaHoraTurno, _ReceitaHoraGeral ) * 100
+// Format: #.##0,0   |   Base 100 = média da operação.
+
+Receita Potencial Hora Extra =
+/* Transforma o achado da Q3 em simulação gerencial. Usa o parâmetro What-If
+   'Cenário Hora Extra' (0 a 3 horas).
+   HONESTIDADE ANALÍTICA: a última hora de operação rende menos que a média do
+   turno — clientes não chegam distribuídos uniformemente. Aplicamos um fator de
+   atenuação de 70%. O número resultante é um TETO para dimensionar um teste,
+   não uma previsão de receita. A recomendação correta é testar 60 dias e medir. */
+VAR _HorasExtras = SELECTEDVALUE ( 'Cenário Hora Extra'[Horas], 0 )
+VAR _FatorAtenuacao = 0.7
+VAR _ReceitaHoraNoite =
+    CALCULATE ( [Receita por Hora], d_turno[nome_turno] = "Noite" )
+VAR _DiasOperados =
+    CALCULATE ( DISTINCTCOUNT ( f_vendas[data] ), ALL ( d_turno ) )
+RETURN
+    _ReceitaHoraNoite * _HorasExtras * _DiasOperados * _FatorAtenuacao
+// Format: R$ #.##0,00
+
+
+/* =====================================================================================
+   PASTA 05 · FORNECEDOR — Capital de giro e exposição logística
+   DOR 2: "precisava de um estoque maior para cobrir esses 5 dias de espera,
+          o que imobiliza capital de giro" — dito no Datacast, nunca quantificado.
+   ===================================================================================== */
+
+Prazo Médio de Entrega =
+VAR _Resultado =
+    AVERAGEX ( VALUES ( d_fornecedor[fornecedor_id] ),
+               CALCULATE ( MAX ( d_fornecedor[prazo_entrega_dias] ) ) )
+RETURN
+    _Resultado
+// Format: #.##0,0
+
+Custo Médio Diário =
+VAR _Custo = [Custo da Mercadoria]
+VAR _DiasTotais = CALCULATE ( DISTINCTCOUNT ( f_vendas[data] ), ALL ( d_fornecedor ) )
+RETURN
+    DIVIDE ( _Custo, _DiasTotais )
+// Format: R$ #.##0,00
+// O denominador ignora o filtro de fornecedor de propósito: são os dias em que a
+// FARMÁCIA operou, não os dias em que aquele fornecedor teve venda registrada.
+
+Capital Imobilizado em Estoque =
+/* Mercadoria necessária para cobrir o lead time de cada fornecedor.
+   Quanto maior o prazo de entrega, maior o estoque de segurança — e maior o
+   capital parado na prateleira em vez de girando no caixa. */
+VAR _DiasTotais = CALCULATE ( DISTINCTCOUNT ( f_vendas[data] ), ALL ( d_fornecedor ) )
+VAR _Resultado =
+    SUMX (
+        VALUES ( d_fornecedor[fornecedor_id] ),
+        VAR _Prazo = CALCULATE ( MAX ( d_fornecedor[prazo_entrega_dias] ) )
+        VAR _CustoDoFornecedor = CALCULATE ( SUM ( f_vendas[custo_total] ) )
+        VAR _CustoDiario = DIVIDE ( _CustoDoFornecedor, _DiasTotais )
+        RETURN _CustoDiario * _Prazo
+    )
+RETURN
+    _Resultado
+// Format: R$ #.##0,00
+// Total da operação: R$ 2.440,10 — 43% concentrados em Medley e Neo Química.
+
+Índice de Exposição Logística =
+VAR _ReceitaFornecedor = [Receita Líquida]
+VAR _ReceitaTotal = CALCULATE ( [Receita Líquida], ALLSELECTED ( d_fornecedor ) )
+VAR _Share = DIVIDE ( _ReceitaFornecedor, _ReceitaTotal )
+VAR _Prazo =
+    AVERAGEX ( VALUES ( d_fornecedor[fornecedor_id] ),
+               CALCULATE ( MAX ( d_fornecedor[prazo_entrega_dias] ) ) )
+RETURN
+    _Share * 100 * _Prazo
+// Format: #.##0,0
+// Combina dependência e lentidão num só número. Neo Química marca 48,6 — o segundo
+// pior da base — sendo apenas a quinta em receita.
+
+Retorno por Real Imobilizado =
+VAR _Lucro = [Lucro]
+VAR _Capital = [Capital Imobilizado em Estoque]
+RETURN
+    DIVIDE ( _Lucro, _Capital )
+// Format: #.##0,00
+// Eficiência do capital travado. Separa quem merece o estoque de quem não merece.
+
+Classificação do Fornecedor =
+VAR _Prazo =
+    AVERAGEX ( VALUES ( d_fornecedor[fornecedor_id] ),
+               CALCULATE ( MAX ( d_fornecedor[prazo_entrega_dias] ) ) )
+VAR _Margem = [Margem %]
+VAR _MargemMedia = CALCULATE ( [Margem %], ALLSELECTED ( d_fornecedor ) )
+VAR _PrazoMedio =
+    CALCULATE (
+        AVERAGEX ( VALUES ( d_fornecedor[fornecedor_id] ),
+                   CALCULATE ( MAX ( d_fornecedor[prazo_entrega_dias] ) ) ),
+        ALLSELECTED ( d_fornecedor )
+    )
+RETURN
+    SWITCH (
+        TRUE (),
+        _Prazo <= _PrazoMedio && _Margem >= _MargemMedia, "★ Parceiro Modelo",
+        _Prazo <= _PrazoMedio && _Margem <  _MargemMedia, "◆ Renegociar Preço",
+        _Prazo >  _PrazoMedio && _Margem >= _MargemMedia, "◐ Aceitável",
+        "✖ Revisar Contrato"
+    )
+// Hypera Pharma = Parceiro Modelo (2 dias, 33,5%).
+// Cimed = Renegociar Preço (prazo bom, pior margem da base: 20,4%).
+// Neo Química = Revisar Contrato (5 dias, 22,4%).
+
+
+/* =====================================================================================
+   PASTA 06 · TEMPO E SAZONALIDADE
+   DOR 3: outubro é forte, mas ninguém sabe por quê. Duas teses concorrentes
+          no Datacast — alergia de primavera e Outubro Rosa — nunca testadas.
+   ===================================================================================== */
+
+Receita AA =
+CALCULATE ( [Receita Líquida], SAMEPERIODLASTYEAR ( d_calendario[data] ) )
+// Format: R$ #.##0,00   |   Exige d_calendario marcada como Tabela de Datas.
+
+Var % YoY =
+VAR _Atual = [Receita Líquida]
+VAR _Anterior = [Receita AA]
+RETURN
+    IF ( NOT ISBLANK ( _Anterior ), DIVIDE ( _Atual - _Anterior, _Anterior ) )
+// Format: 0,0%
+
+Var % YoY por Dia Operado =
+/* A comparação YoY convencional mente sobre 2019: outubro tem 8 dias contra 31
+   do ano anterior. Normalizando por dia operado, o mês que parecia agonia
+   aparece como o terceiro melhor do semestre. */
+VAR _Atual = [Receita por Dia Operado]
+VAR _Anterior =
+    CALCULATE ( [Receita por Dia Operado], SAMEPERIODLASTYEAR ( d_calendario[data] ) )
+RETURN
+    IF ( NOT ISBLANK ( _Anterior ), DIVIDE ( _Atual - _Anterior, _Anterior ) )
+// Format: 0,0%
+
+Índice Sazonal do Mês =
+/* Base 100 = mês médio do período selecionado.
+   Usar em visual quebrado por d_calendario[nome_mes], abrangendo múltiplos anos.
+   RESULTADO: outubro 122,2 (pico) · dezembro 120,7 · janeiro 114,2 · julho 80,3 (vale). */
+VAR _AnosNoContexto =
+    CALCULATE ( DISTINCTCOUNT ( d_calendario[ano] ), ALLSELECTED ( d_calendario ) )
+VAR _MediaDesteMes = DIVIDE ( [Receita Líquida], _AnosNoContexto )
+VAR _ReceitaTotal = CALCULATE ( [Receita Líquida], ALLSELECTED ( d_calendario ) )
+VAR _MesesTotais =
+    CALCULATE ( DISTINCTCOUNT ( d_calendario[PeriodoKey] ), ALLSELECTED ( d_calendario ) )
+VAR _MediaGeral = DIVIDE ( _ReceitaTotal, _MesesTotais )
+RETURN
+    DIVIDE ( _MediaDesteMes, _MediaGeral ) * 100
+// Format: #.##0,0
+
+Índice Sazonal vs. Categoria =
+/* O TESTE QUE DERRUBA AS DUAS TESES DO DATACAST.
+   Calcula o índice sazonal DENTRO de cada grupo terapêutico, isolando o efeito
+   de categoria do efeito de calendário.
+   Índice de outubro: Analgésicos 140,3 · Antiasmáticos 140,1 · Sistema Nervoso 105,2
+   · Anti-inflamatórios 102,3 · ANTI-HISTAMÍNICOS 73,2.
+   A categoria que a tese da alergia elegeu como protagonista é a única que CAI. */
+VAR _AnosNoContexto =
+    CALCULATE ( DISTINCTCOUNT ( d_calendario[ano] ), ALLSELECTED ( d_calendario ) )
+VAR _MediaDesteMes = DIVIDE ( [Receita Líquida], _AnosNoContexto )
+VAR _ReceitaDaCategoria =
+    CALCULATE ( [Receita Líquida], ALLSELECTED ( d_calendario ) )
+VAR _MesesTotais =
+    CALCULATE ( DISTINCTCOUNT ( d_calendario[PeriodoKey] ), ALLSELECTED ( d_calendario ) )
+VAR _MediaDaCategoria = DIVIDE ( _ReceitaDaCategoria, _MesesTotais )
+RETURN
+    DIVIDE ( _MediaDesteMes, _MediaDaCategoria ) * 100
+// Format: #.##0,0
+
+Receita Média por Tipo de Dia =
+// DOR 6. Feriados e fins de semana impactam quanto?
+VAR _Receita = [Receita Líquida]
+VAR _Dias = [Dias Operados]
+RETURN
+    DIVIDE ( _Receita, _Dias )
+// Format: R$ #.##0,00   |   Quebrar por d_calendario[Tipo de Dia].
+
+
+/* =====================================================================================
+   PASTA 07 · PRODUTO — Volume versus margem
+   DOR 8: "vendem muito Paracetamol, mas será que ele dá margem?"
+   ===================================================================================== */
+
+Rank de Lucro =
+VAR _Rank =
+    RANKX ( ALLSELECTED ( d_produto[nome_produto] ), [Lucro], , DESC, DENSE )
+RETURN
+    IF ( NOT ISBLANK ( [Lucro] ), _Rank )
+// Format: #.##0
+
+Rank de Volume =
+VAR _Rank =
+    RANKX ( ALLSELECTED ( d_produto[nome_produto] ), [Quantidade Vendida], , DESC, DENSE )
+RETURN
+    IF ( NOT ISBLANK ( [Quantidade Vendida] ), _Rank )
+// Format: #.##0
+
+Quadrante Volume × Margem =
+/* Separa o que sustenta o LUCRO do que sustenta o TRÁFEGO — perguntas diferentes
+   que a diretoria vinha tratando como uma só. O maior faturador do modelo
+   (Sistema Respiratório, 23,9% de margem) não é o maior lucrador
+   (Analgésicos, 38,9%). */
+VAR _QtdProduto = [Quantidade Vendida]
+VAR _MargemProduto = [Margem %]
+VAR _MargemMedia = CALCULATE ( [Margem %], ALLSELECTED ( d_produto ) )
+VAR _QtdTotal = CALCULATE ( [Quantidade Vendida], ALLSELECTED ( d_produto ) )
+VAR _NumProdutos =
+    CALCULATE ( DISTINCTCOUNT ( d_produto[produto_id] ), ALLSELECTED ( d_produto ) )
+VAR _QtdMedia = DIVIDE ( _QtdTotal, _NumProdutos )
+RETURN
+    SWITCH (
+        TRUE (),
+        _QtdProduto >= _QtdMedia && _MargemProduto >= _MargemMedia, "★ Âncora de Lucro",
+        _QtdProduto >= _QtdMedia && _MargemProduto <  _MargemMedia, "▲ Gerador de Tráfego",
+        _QtdProduto <  _QtdMedia && _MargemProduto >= _MargemMedia, "◆ Nicho Rentável",
+        "○ Ocupa Prateleira"
+    )
+
+Contribuição para o Lucro % =
+VAR _LucroItem = [Lucro]
+VAR _LucroTotal = CALCULATE ( [Lucro], ALLSELECTED ( d_produto ) )
+RETURN
+    DIVIDE ( _LucroItem, _LucroTotal )
+// Format: 0,0%
+
+Lucro Acumulado % (Pareto) =
+VAR _ProdutosOrdenados =
+    ADDCOLUMNS (
+        ALLSELECTED ( d_produto[nome_produto] ),
+        "@Lucro", [Lucro]
+    )
+VAR _LucroAtual = [Lucro]
+VAR _AcimaOuIgual =
+    FILTER ( _ProdutosOrdenados, [@Lucro] >= _LucroAtual )
+VAR _LucroAcumulado = SUMX ( _AcimaOuIgual, [@Lucro] )
+VAR _LucroTotal = SUMX ( _ProdutosOrdenados, [@Lucro] )
+RETURN
+    DIVIDE ( _LucroAcumulado, _LucroTotal )
+// Format: 0,0%   |   Curva ABC: quantos produtos concentram 80% do lucro?
+
+
+/* =====================================================================================
+   PASTA 08 · NARRATIVA — Textos dinâmicos para o dashboard
+   ===================================================================================== */
+
+Título Dinâmico =
+VAR _Periodo =
+    IF (
+        ISFILTERED ( d_calendario[ano] ),
+        CONCATENATEX ( VALUES ( d_calendario[ano] ), d_calendario[ano], ", ", d_calendario[ano], ASC ),
+        "2014–2019"
+    )
+VAR _Turno =
+    IF ( ISFILTERED ( d_turno[nome_turno] ),
+         " · Turno " & SELECTEDVALUE ( d_turno[nome_turno], "(vários)" ),
+         "" )
+RETURN
+    "Farma Xperiun · " & _Periodo & _Turno
+
+Leitura do Período =
+/* Substitui o cartão de KPI mudo por uma frase que já entrega o diagnóstico.
+   A diretoria não precisa interpretar o número — ela lê a conclusão. */
+VAR _Atingimento = [% Atingimento Meta]
+VAR _Gap = [Gap da Meta]
+VAR _Ticket = [Ticket Médio]
+VAR _Margem = [Margem %]
+VAR _TextoMeta =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( _Atingimento ), "Período sem meta definida.",
+        _Atingimento >= 1,
+            "Meta batida com folga de " & FORMAT ( _Gap, "R$ #.##0,00" ) & ".",
+        "Meta não atingida — faltaram " & FORMAT ( ABS ( _Gap ), "R$ #.##0,00" ) &
+            " (" & FORMAT ( 1 - _Atingimento, "0,0%" ) & " abaixo)."
+    )
+RETURN
+    _TextoMeta & " Ticket médio de " & FORMAT ( _Ticket, "R$ #.##0,00" ) &
+    " e margem de " & FORMAT ( _Margem, "0,0%" ) & "."
+
+Alerta de Qualidade de Dados =
+/* Mantém visível no relatório uma limitação que, escondida, viraria decisão errada.
+   Nesta base os anti-histamínicos são CONTRACÍCLICOS (inverno 125,0 · verão 53,4)
+   e os antiasmáticos CAEM no inverno (63,9) — o inverso do comportamento clínico
+   esperado e da própria orientação da documentação do desafio. */
+VAR _CategoriaSelecionada = SELECTEDVALUE ( d_produto[categoria] )
+RETURN
+    SWITCH (
+        _CategoriaSelecionada,
+        "Anti-histamínicos",
+            "⚠ Sazonalidade invertida face à expectativa clínica: pico no inverno, vale no verão. Validar com o negócio antes de decidir compras.",
+        "Antiasmáticos",
+            "⚠ Queda no inverno (índice 63,9), contrariando a expectativa para respiratórios. Validar com o negócio.",
+        BLANK ()
+    )
+
+
+/* =====================================================================================
+   FIM DA BIBLIOTECA
+   -------------------------------------------------------------------------------------
+   50 medidas · 8 pastas de exibição
+   VAR utilizado em todos os cálculos de múltiplas etapas, conforme requisito.
+   Toda medida rastreável a uma dor mapeada na Fase 1.
+
+   VALIDAÇÃO — o modelo deve reproduzir, sem filtros:
+     Transações .......... 85.407
+     Receita Líquida ..... R$ 2.313.807,90
+     Lucro ............... R$   671.861,32
+     Ticket Médio ........ R$        27,09
+     Dias Operados ....... 2.080
+     Meses Batidos ....... 31
+   ===================================================================================== */

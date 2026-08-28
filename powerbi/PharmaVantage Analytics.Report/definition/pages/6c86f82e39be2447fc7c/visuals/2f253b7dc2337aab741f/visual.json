@@ -1,0 +1,169 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
+  "name": "2f253b7dc2337aab741f",
+  "position": {
+    "x": 60,
+    "y": 780,
+    "z": 4000,
+    "height": 280,
+    "width": 1800,
+    "tabOrder": 4000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "d_fornecedor"
+                    }
+                  },
+                  "Property": "nome"
+                }
+              },
+              "queryRef": "d_fornecedor.nome",
+              "nativeQueryRef": "nome"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "d_fornecedor"
+                    }
+                  },
+                  "Property": "Local"
+                }
+              },
+              "queryRef": "d_fornecedor.Local",
+              "nativeQueryRef": "Local"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Prazo Médio de Entrega"
+                }
+              },
+              "queryRef": "_Medidas.Prazo Médio de Entrega",
+              "nativeQueryRef": "Prazo Médio de Entrega"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Margem %"
+                }
+              },
+              "queryRef": "_Medidas.Margem %",
+              "nativeQueryRef": "Margem %"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Capital Imobilizado em Estoque"
+                }
+              },
+              "queryRef": "_Medidas.Capital Imobilizado em Estoque",
+              "nativeQueryRef": "Capital Imobilizado em Estoque"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Classificação do Fornecedor"
+                }
+              },
+              "queryRef": "_Medidas.Classificação do Fornecedor",
+              "nativeQueryRef": "Classificação do Fornecedor"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "_Medidas"
+                  }
+                },
+                "Property": "Capital Imobilizado em Estoque"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "objects": {
+      "columnHeaders": [
+        {
+          "properties": {
+            "columnAdjustment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'growToFit'"
+                }
+              }
+            },
+            "autoSizeColumnWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Capital de Giro Imobilizado por Fornecedor'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,631 @@
+/// Tabela desconectada que hospeda todas as medidas DAX.
+table _Medidas
+	lineageTag: f673fe76-2a55-49bf-9feb-e0189690261a
+
+	/// Faturamento antes de descontos.
+	measure 'Receita Bruta' = SUM ( f_vendas[receita_bruta] )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 01 · Base
+		lineageTag: 650328f5-4087-440f-845c-d9206cbf927a
+
+	measure 'Desconto Concedido' = SUM ( f_vendas[desconto] )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 01 · Base
+		lineageTag: e6193657-4b6d-4bad-9a40-ddf3fbeb5dcd
+
+	/// MEDIDA CANÔNICA DE RECEITA. Nunca recalcular receita a partir de d_produto: o preço praticado varia ±5% face ao preço de tabela, e o valor real da transação está em f_vendas.
+	measure 'Receita Líquida' = SUM ( f_vendas[receita_liquida] )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 01 · Base
+		lineageTag: bcbd80f3-1857-48cf-ae8e-eec3acf7668e
+
+	measure 'Custo da Mercadoria' = SUM ( f_vendas[custo_total] )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 01 · Base
+		lineageTag: c2c7a324-e9fe-4b0f-a76d-7d08fa409067
+
+	measure Lucro = SUM ( f_vendas[lucro] )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 01 · Base
+		lineageTag: a4767bf9-1043-491b-8b2d-4bd49f61eef5
+
+	/// Fracionada por natureza — representa frações de caixa.
+	measure 'Quantidade Vendida' = SUM ( f_vendas[quantidade] )
+		formatString: #,0.0
+		displayFolder: 01 · Base
+		lineageTag: 187877de-3473-4c0d-b91d-eaa5efd83d8c
+
+	measure Transações = COUNTROWS ( f_vendas )
+		formatString: #,0
+		displayFolder: 01 · Base
+		lineageTag: e34a05fa-6b20-483e-81ea-849187c2d97b
+
+	/// Denominador honesto para qualquer comparação temporal. É esta medida que impede a leitura errada de outubro/2019 (mês parcial de 8 dias).
+	measure 'Dias Operados' = DISTINCTCOUNT ( f_vendas[data] )
+		formatString: #,0
+		displayFolder: 01 · Base
+		lineageTag: 6818a03f-0f8e-4caa-88da-a8895d569ca6
+
+	/// DOR 1 e 4. O atingimento de quantidade é estável (95,7% a 98,3% em todos os anos) enquanto o de receita oscila — logo é o ticket, não o fluxo, que move o resultado.
+	measure 'Ticket Médio' =
+			VAR _Receita = [Receita Líquida]
+			VAR _Transacoes = [Transações]
+			RETURN
+			    DIVIDE ( _Receita, _Transacoes )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 02 · KPIs
+		lineageTag: cc1f53f2-11de-4282-8801-49f4613b0c79
+
+	measure 'Margem %' =
+			VAR _Lucro = [Lucro]
+			VAR _Receita = [Receita Líquida]
+			RETURN
+			    DIVIDE ( _Lucro, _Receita )
+		formatString: 0.0%
+		displayFolder: 02 · KPIs
+		lineageTag: eaefc53c-800a-4048-91ab-eea212d0f69a
+
+	/// DOR 7. Os descontos estão corroendo margem ou atraindo volume?
+	measure 'Desconto %' =
+			VAR _Desconto = [Desconto Concedido]
+			VAR _Bruta = [Receita Bruta]
+			RETURN
+			    DIVIDE ( _Desconto, _Bruta )
+		formatString: 0.00%
+		displayFolder: 02 · KPIs
+		lineageTag: eab31044-ebf2-458b-be83-3a692bcb2e90
+
+	/// DOR 5. A única base justa para comparar meses de tamanhos diferentes. Outubro/2019 tem 8 dias: em valor absoluto parece colapso, por dia operado (R$ 1.146,90) está ACIMA de junho, julho, agosto e setembro.
+	measure 'Receita por Dia Operado' =
+			VAR _Receita = [Receita Líquida]
+			VAR _Dias = [Dias Operados]
+			RETURN
+			    DIVIDE ( _Receita, _Dias )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 02 · KPIs
+		lineageTag: b8d3f6c8-ed50-4233-9ba8-42ee85067596
+
+	/// DOR 8. Controlados têm margem estruturalmente menor (Sistema Nervoso 23,2% vs. Analgésicos 38,9%).
+	measure '% Receita Controlados' =
+			VAR _Controlados =
+			    CALCULATE ( [Receita Líquida], d_produto[exige_receita] = 1 )
+			VAR _Total = [Receita Líquida]
+			RETURN
+			    DIVIDE ( _Controlados, _Total )
+		formatString: 0.0%
+		displayFolder: 02 · KPIs
+		lineageTag: 7b1264a6-700f-44bf-90d2-ab23d9efa564
+
+	measure 'Meta Receita' = SUM ( f_meta_mensal[meta_receita] )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 03 · Metas
+		lineageTag: fbb22736-2333-44d8-9c0e-4149065fcb29
+
+	measure 'Meta Quantidade' = SUM ( f_meta_mensal[meta_quantidade] )
+		formatString: #,0
+		displayFolder: 03 · Metas
+		lineageTag: bae442cc-c9b1-4466-b8c6-d64b6fb1daeb
+
+	/// Não existe meta diária: em contexto de dia a medida retorna vazio em vez de inventar um percentual. Meta zero (out/nov/dez de 2019) é ausência de meta, não meta baixa.
+	measure '% Atingimento Meta' =
+			VAR _Meta = [Meta Receita]
+			VAR _Realizado = [Receita Líquida]
+			VAR _GrauDoContexto = ISINSCOPE ( d_calendario[data] )
+			VAR _Resultado = DIVIDE ( _Realizado, _Meta )
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        _GrauDoContexto, BLANK (),
+			        _Meta <= 0, BLANK (),
+			        _Resultado
+			    )
+		formatString: 0.0%
+		displayFolder: 03 · Metas
+		lineageTag: 61db805e-bab1-463d-a7ab-db65b526ec43
+
+	measure 'Gap da Meta' =
+			VAR _Meta = [Meta Receita]
+			VAR _Realizado = [Receita Líquida]
+			RETURN
+			    IF ( _Meta > 0, _Realizado - _Meta )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 03 · Metas
+		lineageTag: 10fd58d1-2dc9-4acd-90e1-0349c250e272
+
+	measure 'Status da Meta' =
+			VAR _Atingimento = [% Atingimento Meta]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( _Atingimento ), "Sem meta definida",
+			        _Atingimento >= 1.05,  "▲ Superada",
+			        _Atingimento >= 1,     "● Batida",
+			        _Atingimento >= 0.95,  "◐ No limite",
+			        _Atingimento >= 0.85,  "▼ Abaixo",
+			        "✖ Crítica"
+			    )
+		displayFolder: 03 · Metas
+		lineageTag: c30a7090-af6a-411c-a1c2-d8ffebade743
+
+	/// Usar em Formatação condicional > Cor do plano de fundo > Valor do campo.
+	measure 'Cor do Status da Meta' =
+			VAR _Atingimento = [% Atingimento Meta]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( _Atingimento ), "#8A8F98",
+			        _Atingimento >= 1,    "#1F9D6B",
+			        _Atingimento >= 0.95, "#C8951B",
+			        "#C2483C"
+			    )
+		isHidden
+		displayFolder: 03 · Metas
+		lineageTag: 52ad26b6-4300-4ec7-a518-215500d40bf6
+
+	/// Resultado histórico: 31 de 69 meses (45%).
+	measure 'Meses Batidos' =
+			VAR _MesesAvaliados =
+			    ADDCOLUMNS (
+			        SUMMARIZE ( d_periodo, d_periodo[PeriodoKey] ),
+			        "@Meta",      [Meta Receita],
+			        "@Realizado", [Receita Líquida]
+			    )
+			VAR _ComMeta = FILTER ( _MesesAvaliados, [@Meta] > 0 )
+			VAR _Batidos = FILTER ( _ComMeta, [@Realizado] >= [@Meta] )
+			RETURN
+			    COUNTROWS ( _Batidos )
+		formatString: #,0
+		displayFolder: 03 · Metas
+		lineageTag: 9b841fb5-a187-4ff4-8194-ad32a412f8d7
+
+	measure 'Taxa de Sucesso Mensal' =
+			VAR _MesesAvaliados =
+			    ADDCOLUMNS (
+			        SUMMARIZE ( d_periodo, d_periodo[PeriodoKey] ),
+			        "@Meta",      [Meta Receita],
+			        "@Realizado", [Receita Líquida]
+			    )
+			VAR _ComMeta = COUNTROWS ( FILTER ( _MesesAvaliados, [@Meta] > 0 ) )
+			VAR _Batidos = COUNTROWS ( FILTER ( _MesesAvaliados, [@Meta] > 0 && [@Realizado] >= [@Meta] ) )
+			RETURN
+			    DIVIDE ( _Batidos, _ComMeta )
+		formatString: 0.0%
+		displayFolder: 03 · Metas
+		lineageTag: cf42bab3-f672-442c-a0c2-27d4b4d885bd
+
+	/// A DESCOBERTA CENTRAL. Quanto MAIOR o valor, mais a meta se comporta como previsão e menos como alvo. Acima de 95% deve acender alerta de governança.
+	measure 'Aderência da Meta ao Realizado' =
+			VAR _MesesAvaliados =
+			    ADDCOLUMNS (
+			        SUMMARIZE ( d_periodo, d_periodo[PeriodoKey] ),
+			        "@Meta",      [Meta Receita],
+			        "@Realizado", [Receita Líquida]
+			    )
+			VAR _ComMeta = FILTER ( _MesesAvaliados, [@Meta] > 0 )
+			VAR _DesvioMedioAbsoluto =
+			    AVERAGEX ( _ComMeta, ABS ( DIVIDE ( [@Realizado] - [@Meta], [@Meta] ) ) )
+			RETURN
+			    1 - _DesvioMedioAbsoluto
+		formatString: 0.0%
+		displayFolder: 03 · Metas
+		lineageTag: bf979379-9189-411d-bd2b-154ea445d774
+
+	/// DOR 6. Metas mensais são planas, mas os meses não são iguais. Normaliza a meta pelo peso real do mês em dias úteis.
+	measure 'Meta Ajustada por Dias Úteis' =
+			VAR _Meta = [Meta Receita]
+			VAR _DiasUteisDoMes =
+			    CALCULATE (
+			        COUNTROWS ( d_calendario ),
+			        d_calendario[Tipo de Dia] = "Dia Útil"
+			    )
+			VAR _DiasUteisMediosPorMes =
+			    AVERAGEX (
+			        SUMMARIZE ( ALL ( d_calendario ), d_calendario[PeriodoKey] ),
+			        CALCULATE (
+			            COUNTROWS ( d_calendario ),
+			            d_calendario[Tipo de Dia] = "Dia Útil"
+			        )
+			    )
+			VAR _Fator = DIVIDE ( _DiasUteisDoMes, _DiasUteisMediosPorMes )
+			RETURN
+			    IF ( _Meta > 0, _Meta * _Fator )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 03 · Metas
+		lineageTag: 0e802897-5e14-46d4-bce7-7d9e3507c1c1
+
+	measure '% Atingimento Ajustado' =
+			VAR _MetaAjustada = [Meta Ajustada por Dias Úteis]
+			VAR _Realizado = [Receita Líquida]
+			RETURN
+			    IF ( _MetaAjustada > 0, DIVIDE ( _Realizado, _MetaAjustada ) )
+		formatString: 0.0%
+		displayFolder: 03 · Metas
+		lineageTag: 51bd6ab6-5e39-4794-a1a2-b37658fcd6f0
+
+	/// Dias operados x duração do turno. O SUMX garante que funcione tanto em linha de turno quanto no total geral, onde as durações diferem.
+	measure 'Horas de Operação' =
+			VAR _Resultado =
+			    SUMX (
+			        VALUES ( d_turno[turno_id] ),
+			        VAR _Duracao = CALCULATE ( MAX ( d_turno[Duração do Turno (h)] ) )
+			        VAR _Dias    = CALCULATE ( DISTINCTCOUNT ( f_vendas[data] ) )
+			        RETURN _Duracao * _Dias
+			    )
+			RETURN
+			    _Resultado
+		formatString: #,0
+		displayFolder: 04 · Turno
+		lineageTag: 7e3da536-b2ac-4d29-80dc-4a6144e8b775
+
+	/// RESULTADO QUE INVERTE A LEITURA: Noite R$ 88,96 · Manhã R$ 79,70 · Tarde R$ 74,29.
+	measure 'Receita por Hora' =
+			VAR _Receita = [Receita Líquida]
+			VAR _Horas = [Horas de Operação]
+			RETURN
+			    DIVIDE ( _Receita, _Horas )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 04 · Turno
+		lineageTag: a42b3c6b-d98c-4654-8a4e-c6dba28020f6
+
+	measure 'Lucro por Hora' =
+			VAR _Lucro = [Lucro]
+			VAR _Horas = [Horas de Operação]
+			RETURN
+			    DIVIDE ( _Lucro, _Horas )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 04 · Turno
+		lineageTag: 70cbf2e8-c793-4b61-af46-eb835033fe09
+
+	/// Noite 3,09 · Manhã 2,99 · Tarde 2,84. ELIMINA a hipótese de queda de fluxo à noite: o fluxo horário noturno é o MAIOR dos três.
+	measure 'Transações por Hora' =
+			VAR _Transacoes = [Transações]
+			VAR _Horas = [Horas de Operação]
+			RETURN
+			    DIVIDE ( _Transacoes, _Horas )
+		formatString: #,0.00
+		displayFolder: 04 · Turno
+		lineageTag: 8dfcf351-ff3f-45bd-bd61-f66b7bbe4003
+
+	/// Base 100 = média da operação.
+	measure 'Índice de Produtividade do Turno' =
+			VAR _ReceitaHoraTurno = [Receita por Hora]
+			VAR _ReceitaHoraGeral =
+			    CALCULATE ( [Receita por Hora], ALLSELECTED ( d_turno ) )
+			RETURN
+			    DIVIDE ( _ReceitaHoraTurno, _ReceitaHoraGeral ) * 100
+		formatString: #,0.0
+		displayFolder: 04 · Turno
+		lineageTag: 2dc3344f-72be-4529-9810-82c4cfd2ddda
+
+	/// TETO, não previsão. A última hora rende menos que a média do turno (atenuação de 70%) e o adicional noturno NÃO está descontado. Serve para dimensionar um teste de 60 dias.
+	measure 'Receita Potencial Hora Extra' =
+			VAR _HorasExtras = SELECTEDVALUE ( 'Cenário Hora Extra'[Horas], 0 )
+			VAR _FatorAtenuacao = 0.7
+			VAR _ReceitaHoraNoite =
+			    CALCULATE ( [Receita por Hora], d_turno[nome_turno] = "Noite" )
+			VAR _DiasOperados =
+			    CALCULATE ( DISTINCTCOUNT ( f_vendas[data] ), ALL ( d_turno ) )
+			RETURN
+			    _ReceitaHoraNoite * _HorasExtras * _DiasOperados * _FatorAtenuacao
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 04 · Turno
+		lineageTag: 653b9b7d-ca44-4024-aa9e-c3c5335d3768
+
+	measure 'Prazo Médio de Entrega' =
+			AVERAGEX (
+			    VALUES ( d_fornecedor[fornecedor_id] ),
+			    CALCULATE ( MAX ( d_fornecedor[prazo_entrega_dias] ) )
+			)
+		formatString: #,0.0
+		displayFolder: 05 · Fornecedor
+		lineageTag: e2be2a93-fa5d-4a70-91a1-97f059eb82c9
+
+	/// O denominador ignora o filtro de fornecedor de propósito: são os dias em que a FARMÁCIA operou, não os dias em que aquele fornecedor teve venda.
+	measure 'Custo Médio Diário' =
+			VAR _Custo = [Custo da Mercadoria]
+			VAR _DiasTotais = CALCULATE ( DISTINCTCOUNT ( f_vendas[data] ), ALL ( d_fornecedor ) )
+			RETURN
+			    DIVIDE ( _Custo, _DiasTotais )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 05 · Fornecedor
+		lineageTag: e4f13172-6e2e-4ded-b59d-983019605550
+
+	/// DOR 2. Mercadoria necessária para cobrir o lead time. Total da operação: R$ 2.440,10 — 43% em Medley e Neo Química.
+	measure 'Capital Imobilizado em Estoque' =
+			VAR _DiasTotais = CALCULATE ( DISTINCTCOUNT ( f_vendas[data] ), ALL ( d_fornecedor ) )
+			VAR _Resultado =
+			    SUMX (
+			        VALUES ( d_fornecedor[fornecedor_id] ),
+			        VAR _Prazo = CALCULATE ( MAX ( d_fornecedor[prazo_entrega_dias] ) )
+			        VAR _CustoDoFornecedor = CALCULATE ( SUM ( f_vendas[custo_total] ) )
+			        VAR _CustoDiario = DIVIDE ( _CustoDoFornecedor, _DiasTotais )
+			        RETURN _CustoDiario * _Prazo
+			    )
+			RETURN
+			    _Resultado
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 05 · Fornecedor
+		lineageTag: d049e8d1-a259-41cc-bd6c-a4d412b71335
+
+	/// Combina dependência e lentidão num só número. Neo Química marca 48,6 — o segundo pior — sendo apenas a quinta em receita.
+	measure 'Índice de Exposição Logística' =
+			VAR _ReceitaFornecedor = [Receita Líquida]
+			VAR _ReceitaTotal = CALCULATE ( [Receita Líquida], ALLSELECTED ( d_fornecedor ) )
+			VAR _Share = DIVIDE ( _ReceitaFornecedor, _ReceitaTotal )
+			VAR _Prazo =
+			    AVERAGEX (
+			        VALUES ( d_fornecedor[fornecedor_id] ),
+			        CALCULATE ( MAX ( d_fornecedor[prazo_entrega_dias] ) )
+			    )
+			RETURN
+			    _Share * 100 * _Prazo
+		formatString: #,0.0
+		displayFolder: 05 · Fornecedor
+		lineageTag: dae2f854-5825-483e-90e9-2ac12900c70a
+
+	/// Eficiência do capital travado. Separa quem merece o estoque de quem não merece.
+	measure 'Retorno por Real Imobilizado' =
+			VAR _Lucro = [Lucro]
+			VAR _Capital = [Capital Imobilizado em Estoque]
+			RETURN
+			    DIVIDE ( _Lucro, _Capital )
+		formatString: #,0.00
+		displayFolder: 05 · Fornecedor
+		lineageTag: 36f4fc0f-f60f-4ba3-a6ca-b40d04d4a5cb
+
+	/// Hypera = Parceiro Modelo (2 dias, 33,5%). Cimed = Renegociar Preço (prazo bom, pior margem: 20,4%). Neo Química = Revisar Contrato (5 dias, 22,4%).
+	measure 'Classificação do Fornecedor' =
+			VAR _Prazo =
+			    AVERAGEX (
+			        VALUES ( d_fornecedor[fornecedor_id] ),
+			        CALCULATE ( MAX ( d_fornecedor[prazo_entrega_dias] ) )
+			    )
+			VAR _Margem = [Margem %]
+			VAR _MargemMedia = CALCULATE ( [Margem %], ALLSELECTED ( d_fornecedor ) )
+			VAR _PrazoMedio =
+			    CALCULATE (
+			        AVERAGEX (
+			            VALUES ( d_fornecedor[fornecedor_id] ),
+			            CALCULATE ( MAX ( d_fornecedor[prazo_entrega_dias] ) )
+			        ),
+			        ALLSELECTED ( d_fornecedor )
+			    )
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        _Prazo <= _PrazoMedio && _Margem >= _MargemMedia, "★ Parceiro Modelo",
+			        _Prazo <= _PrazoMedio && _Margem <  _MargemMedia, "◆ Renegociar Preço",
+			        _Prazo >  _PrazoMedio && _Margem >= _MargemMedia, "◐ Aceitável",
+			        "✖ Revisar Contrato"
+			    )
+		displayFolder: 05 · Fornecedor
+		lineageTag: 1c8db840-6b9b-4b6a-b75b-43b8bd31cb1c
+
+	/// Exige d_calendario marcada como Tabela de Datas.
+	measure 'Receita AA' = CALCULATE ( [Receita Líquida], SAMEPERIODLASTYEAR ( d_calendario[data] ) )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 06 · Tempo e Sazonalidade
+		lineageTag: b93324a5-0a68-4be2-bc9c-872abe7afdf4
+
+	measure 'Var % YoY' =
+			VAR _Atual = [Receita Líquida]
+			VAR _Anterior = [Receita AA]
+			RETURN
+			    IF ( NOT ISBLANK ( _Anterior ), DIVIDE ( _Atual - _Anterior, _Anterior ) )
+		formatString: 0.0%
+		displayFolder: 06 · Tempo e Sazonalidade
+		lineageTag: 393bca4e-5f22-459b-b4ae-3b6f139a1d28
+
+	/// A comparação YoY convencional mente sobre 2019: outubro tem 8 dias contra 31 do ano anterior.
+	measure 'Var % YoY por Dia Operado' =
+			VAR _Atual = [Receita por Dia Operado]
+			VAR _Anterior =
+			    CALCULATE ( [Receita por Dia Operado], SAMEPERIODLASTYEAR ( d_calendario[data] ) )
+			RETURN
+			    IF ( NOT ISBLANK ( _Anterior ), DIVIDE ( _Atual - _Anterior, _Anterior ) )
+		formatString: 0.0%
+		displayFolder: 06 · Tempo e Sazonalidade
+		lineageTag: f6e94dbb-2d57-4bc1-925c-4b801f0d6477
+
+	/// Base 100 = mês médio. Usar em visual quebrado por d_calendario[nome_mes] abrangendo vários anos. Outubro 122,2 (pico) · dezembro 120,7 · julho 80,3 (vale).
+	measure 'Índice Sazonal do Mês' =
+			VAR _AnosNoContexto =
+			    CALCULATE ( DISTINCTCOUNT ( d_calendario[ano] ), ALLSELECTED ( d_calendario ) )
+			VAR _MediaDesteMes = DIVIDE ( [Receita Líquida], _AnosNoContexto )
+			VAR _ReceitaTotal = CALCULATE ( [Receita Líquida], ALLSELECTED ( d_calendario ) )
+			VAR _MesesTotais =
+			    CALCULATE ( DISTINCTCOUNT ( d_calendario[PeriodoKey] ), ALLSELECTED ( d_calendario ) )
+			VAR _MediaGeral = DIVIDE ( _ReceitaTotal, _MesesTotais )
+			RETURN
+			    DIVIDE ( _MediaDesteMes, _MediaGeral ) * 100
+		formatString: #,0.0
+		displayFolder: 06 · Tempo e Sazonalidade
+		lineageTag: dd1e2837-5581-4e5a-a3f8-9c495fa3aad7
+
+	/// O TESTE QUE DERRUBA AS DUAS TESES DE OUTUBRO. Índice de outubro: Analgésicos 140,3 · Antiasmáticos 140,1 · Sistema Nervoso 105,2 · Anti-inflamatórios 102,3 · ANTI-HISTAMÍNICOS 73,2.
+	measure 'Índice Sazonal vs. Categoria' =
+			VAR _AnosNoContexto =
+			    CALCULATE ( DISTINCTCOUNT ( d_calendario[ano] ), ALLSELECTED ( d_calendario ) )
+			VAR _MediaDesteMes = DIVIDE ( [Receita Líquida], _AnosNoContexto )
+			VAR _ReceitaDaCategoria = CALCULATE ( [Receita Líquida], ALLSELECTED ( d_calendario ) )
+			VAR _MesesTotais =
+			    CALCULATE ( DISTINCTCOUNT ( d_calendario[PeriodoKey] ), ALLSELECTED ( d_calendario ) )
+			VAR _MediaDaCategoria = DIVIDE ( _ReceitaDaCategoria, _MesesTotais )
+			RETURN
+			    DIVIDE ( _MediaDesteMes, _MediaDaCategoria ) * 100
+		formatString: #,0.0
+		displayFolder: 06 · Tempo e Sazonalidade
+		lineageTag: 420cec59-4411-4359-aff3-487c0cb7a52c
+
+	/// DOR 6. Quebrar por d_calendario[Tipo de Dia]. Fim de semana R$ 1.129,05 · dia útil R$ 1.108,24 · feriado R$ 1.014,75.
+	measure 'Receita Média por Tipo de Dia' =
+			VAR _Receita = [Receita Líquida]
+			VAR _Dias = [Dias Operados]
+			RETURN
+			    DIVIDE ( _Receita, _Dias )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 06 · Tempo e Sazonalidade
+		lineageTag: b6158082-1708-42fc-8270-7e557ddfabe7
+
+	measure 'Rank de Lucro' =
+			VAR _Rank =
+			    RANKX ( ALLSELECTED ( d_produto[nome_produto] ), [Lucro], , DESC, DENSE )
+			RETURN
+			    IF ( NOT ISBLANK ( [Lucro] ), _Rank )
+		formatString: #,0
+		displayFolder: 07 · Produto
+		lineageTag: e580477f-7932-45af-bdf4-33c1dc3565da
+
+	measure 'Rank de Volume' =
+			VAR _Rank =
+			    RANKX ( ALLSELECTED ( d_produto[nome_produto] ), [Quantidade Vendida], , DESC, DENSE )
+			RETURN
+			    IF ( NOT ISBLANK ( [Quantidade Vendida] ), _Rank )
+		formatString: #,0
+		displayFolder: 07 · Produto
+		lineageTag: 4a62d3c8-0add-45c8-b37e-4492cb37ec35
+
+	/// DOR 8. Separa o que sustenta o LUCRO do que sustenta o TRÁFEGO.
+	measure 'Quadrante Volume x Margem' =
+			VAR _QtdProduto = [Quantidade Vendida]
+			VAR _MargemProduto = [Margem %]
+			VAR _MargemMedia = CALCULATE ( [Margem %], ALLSELECTED ( d_produto ) )
+			VAR _QtdTotal = CALCULATE ( [Quantidade Vendida], ALLSELECTED ( d_produto ) )
+			VAR _NumProdutos =
+			    CALCULATE ( DISTINCTCOUNT ( d_produto[produto_id] ), ALLSELECTED ( d_produto ) )
+			VAR _QtdMedia = DIVIDE ( _QtdTotal, _NumProdutos )
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        _QtdProduto >= _QtdMedia && _MargemProduto >= _MargemMedia, "★ Âncora de Lucro",
+			        _QtdProduto >= _QtdMedia && _MargemProduto <  _MargemMedia, "▲ Gerador de Tráfego",
+			        _QtdProduto <  _QtdMedia && _MargemProduto >= _MargemMedia, "◆ Nicho Rentável",
+			        "○ Ocupa Prateleira"
+			    )
+		displayFolder: 07 · Produto
+		lineageTag: 5f5a29cf-c87f-4424-b2cc-8847a59975c2
+
+	measure 'Contribuição para o Lucro %' =
+			VAR _LucroItem = [Lucro]
+			VAR _LucroTotal = CALCULATE ( [Lucro], ALLSELECTED ( d_produto ) )
+			RETURN
+			    DIVIDE ( _LucroItem, _LucroTotal )
+		formatString: 0.0%
+		displayFolder: 07 · Produto
+		lineageTag: 7472a4b3-e6a6-4aec-9a7b-f5343c8d0309
+
+	/// Curva ABC: quantos produtos concentram 80% do lucro?
+	measure 'Lucro Acumulado % (Pareto)' =
+			VAR _ProdutosOrdenados =
+			    ADDCOLUMNS (
+			        ALLSELECTED ( d_produto[nome_produto] ),
+			        "@Lucro", [Lucro]
+			    )
+			VAR _LucroAtual = [Lucro]
+			VAR _AcimaOuIgual = FILTER ( _ProdutosOrdenados, [@Lucro] >= _LucroAtual )
+			VAR _LucroAcumulado = SUMX ( _AcimaOuIgual, [@Lucro] )
+			VAR _LucroTotal = SUMX ( _ProdutosOrdenados, [@Lucro] )
+			RETURN
+			    DIVIDE ( _LucroAcumulado, _LucroTotal )
+		formatString: 0.0%
+		displayFolder: 07 · Produto
+		lineageTag: 4008df19-9a19-4358-91b2-62e12195e100
+
+	measure 'Título Dinâmico' =
+			VAR _Periodo =
+			    IF (
+			        ISFILTERED ( d_calendario[ano] ),
+			        CONCATENATEX ( VALUES ( d_calendario[ano] ), d_calendario[ano], ", ", d_calendario[ano], ASC ),
+			        "2014–2019"
+			    )
+			VAR _Turno =
+			    IF (
+			        ISFILTERED ( d_turno[nome_turno] ),
+			        " · Turno " & SELECTEDVALUE ( d_turno[nome_turno], "(vários)" ),
+			        ""
+			    )
+			RETURN
+			    "Farma Xperiun · " & _Periodo & _Turno
+		displayFolder: 08 · Narrativa
+		lineageTag: 9380925c-1a1e-4c26-9fad-317719c775af
+
+	/// Substitui o cartão de KPI mudo por uma frase que já entrega o diagnóstico.
+	measure 'Leitura do Período' =
+			VAR _Atingimento = [% Atingimento Meta]
+			VAR _Gap = [Gap da Meta]
+			VAR _Ticket = [Ticket Médio]
+			VAR _Margem = [Margem %]
+			VAR _TextoMeta =
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( _Atingimento ), "Período sem meta definida.",
+			        _Atingimento >= 1,
+			            "Meta batida com folga de " & FORMAT ( _Gap, "R$ #,##0.00" ) & ".",
+			        "Meta não atingida — faltaram " & FORMAT ( ABS ( _Gap ), "R$ #,##0.00" ) &
+			            " (" & FORMAT ( 1 - _Atingimento, "0.0%" ) & " abaixo)."
+			    )
+			RETURN
+			    _TextoMeta & " Ticket médio de " & FORMAT ( _Ticket, "R$ #,##0.00" ) &
+			    " e margem de " & FORMAT ( _Margem, "0.0%" ) & "."
+		displayFolder: 08 · Narrativa
+		lineageTag: 886a0548-2c8e-49a9-ad22-1b4199dd4f0c
+
+	/// Mantém visível no relatório uma limitação que, escondida, viraria decisão errada.
+	measure 'Alerta de Qualidade de Dados' =
+			VAR _CategoriaSelecionada = SELECTEDVALUE ( d_produto[categoria] )
+			RETURN
+			    SWITCH (
+			        _CategoriaSelecionada,
+			        "Anti-histamínicos",
+			            "⚠ Sazonalidade invertida face à expectativa clínica: pico no inverno, vale no verão. Validar com o negócio antes de decidir compras.",
+			        "Antiasmáticos",
+			            "⚠ Queda no inverno (índice 63,9), contrariando a expectativa para respiratórios. Validar com o negócio.",
+			        BLANK ()
+			    )
+		displayFolder: 08 · Narrativa
+		lineageTag: 2fc9953b-8756-4ac0-8c85-e2e10aa326a6
+
+	measure 'Lucro Potencial Hora Extra' =
+			VAR _HorasExtras = SELECTEDVALUE ( 'Cenário Hora Extra'[Horas], 0 )
+			VAR _FatorAtenuacao = 0.7
+			VAR _LucroHoraNoite =
+			    CALCULATE ( [Lucro por Hora], d_turno[nome_turno] = "Noite" )
+			VAR _DiasOperados =
+			    CALCULATE ( DISTINCTCOUNT ( f_vendas[data] ), ALL ( d_turno ) )
+			RETURN
+			    _LucroHoraNoite * _HorasExtras * _DiasOperados * _FatorAtenuacao
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 04 · Turno
+		lineageTag: 2b3a109b-98db-41cc-9f83-163044877dc4
+
+	/// Hora de fechamento simulada do turno da noite, dado o cenario de horas extras selecionado.
+	measure 'Fechamento Simulado' =
+			VAR _HorasExtras = SELECTEDVALUE ( 'Cenário Hora Extra'[Horas], 0 )
+			VAR _FechamentoBase =
+			    CALCULATE ( MAX ( d_turno[hora_fim] ), d_turno[nome_turno] = "Noite" )
+			VAR _NovoFechamento = _FechamentoBase + _HorasExtras
+			RETURN
+			    FORMAT ( _NovoFechamento, "0" ) & "h"
+		displayFolder: 04 · Turno
+		lineageTag: a47a6116-55c8-4713-b390-7e21460f2936
+
+	/// Variância percentual entre o realizado e a meta (Atingimento - 100%). Usado no card 'Target Variance %' do dashboard executivo. Negativo = abaixo da meta.
+	measure '% Desvio da Meta' =
+			IF (
+			    ISBLANK ( [% Atingimento Meta] ),
+			    BLANK (),
+			    [% Atingimento Meta] - 1
+			)
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 03 · Metas
+		lineageTag: c70c4ceb-d5ae-4880-93e3-20b8af3eec49
+
+	column _
+		lineageTag: 8187144f-93fd-44d4-abed-72541ee33f9e
+		isNameInferred
+		sourceColumn: [_]
+
+	partition _Medidas = calculated
+		mode: import
+		source = ROW ( "_", 1 )
+

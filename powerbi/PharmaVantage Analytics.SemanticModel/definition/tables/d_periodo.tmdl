@@ -1,0 +1,45 @@
+/// DIMENSAO CONFORMADA. Resolve a diferenca de granularidade entre o fato diario (f_vendas) e o fato de orcamento mensal (f_meta_mensal), filtrando os dois a partir de um unico ponto. Ao filtrar por DIA a meta nao responde - e isso esta correto: nao existe meta diaria. Tabela M (nao mais calculada via DAX) para evitar um bug conhecido do TOM/Power BI Desktop em que relacoes apontando para colunas de tabelas calculadas via SUMMARIZE/DISTINCT falham ao reabrir o projeto com erro 'invalid column ID'.
+table d_periodo
+	lineageTag: 1be00bd1-8999-494d-a44e-9867d221a5bc
+
+	column ano
+		dataType: int64
+		lineageTag: 00864388-a8b1-4617-aaf7-c09fcbc1684a
+		summarizeBy: none
+		sourceColumn: ano
+
+	column mes
+		dataType: int64
+		isHidden
+		lineageTag: a1434c40-48b2-45c4-86dc-449ca4f00ec2
+		summarizeBy: none
+		sourceColumn: mes
+
+	column PeriodoKey
+		dataType: int64
+		isHidden
+		lineageTag: 972c9d57-e1d2-4b5e-afaa-7fc3a6355600
+		summarizeBy: none
+		sourceColumn: PeriodoKey
+
+	column AnoMes
+		dataType: string
+		lineageTag: 5034db0b-6025-4d1e-9fe3-dabf7ddef4ef
+		summarizeBy: none
+		sourceColumn: AnoMes
+
+	partition d_periodo = m
+		mode: import
+		source =
+				let
+				    Fonte = Table.Distinct(
+				        Table.SelectColumns(f_meta_mensal, {"ano", "mes"})
+				    ),
+				    ChaveAdicionada = Table.AddColumn(Fonte, "PeriodoKey",
+				        each [ano] * 100 + [mes], Int64.Type),
+				    AnoMesAdicionado = Table.AddColumn(ChaveAdicionada, "AnoMes",
+				        each Text.From([ano]) & "-" & Text.PadStart(Text.From([mes]), 2, "0"), type text),
+				    Ordenado = Table.Sort(AnoMesAdicionado, {{"PeriodoKey", Order.Ascending}})
+				in
+				    Ordenado
+

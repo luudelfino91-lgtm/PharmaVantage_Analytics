@@ -1,0 +1,55 @@
+/// 8 laboratorios fornecedores.
+table d_fornecedor
+	lineageTag: 147582e7-51f3-4944-a071-550a45a3cd7e
+
+	column fornecedor_id
+		dataType: int64
+		isHidden
+		lineageTag: 9961979b-84c0-4cb7-89f5-cb9b60b9cee3
+		summarizeBy: none
+		sourceColumn: fornecedor_id
+
+	column nome
+		dataType: string
+		lineageTag: 6da9d900-1463-422a-9ca6-dfa063b173dc
+		sourceColumn: nome
+
+	column cidade
+		dataType: string
+		lineageTag: a304b468-c215-433c-80e5-b1f859c0aa0b
+		dataCategory: City
+		sourceColumn: cidade
+
+	column estado
+		dataType: string
+		lineageTag: b2e87643-fecb-4a9a-9a33-7ff933e12b57
+		dataCategory: StateOrProvince
+		sourceColumn: estado
+
+	column regiao
+		dataType: string
+		lineageTag: a8e352ac-149d-4cc1-9e58-52ea70afb077
+		sourceColumn: regiao
+
+	/// Atributo, nao medida. Somar prazos nao significa nada.
+	column prazo_entrega_dias
+		dataType: int64
+		lineageTag: 92d62005-6e8c-4fc6-bd73-7f5c52e7bdd3
+		summarizeBy: none
+		sourceColumn: prazo_entrega_dias
+
+	/// Cidade/UF concatenados para exibicao em tabelas e tooltips.
+	column Local = d_fornecedor[cidade] & "/" & d_fornecedor[estado]
+		dataType: string
+		lineageTag: 1f18876d-abd8-46fd-8f76-2e707abc2af5
+		summarizeBy: none
+
+	partition d_fornecedor = m
+		mode: import
+		source =
+				let
+				    Fonte = Sql.Database(Servidor, Banco),
+				    Origem = Fonte{[Schema="dbo",Item="d_fornecedor"]}[Data]
+				in
+				    Origem
+
