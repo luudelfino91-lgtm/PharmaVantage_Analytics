@@ -1,0 +1,6 @@
+# Farma Xperiun · Data Challenge
+# Instalar:  pip install -r requirements.txt
+
+pyodbc>=5.1.0        # conexão com o SQL Server (scripts/run_sql_server.py)
+
+# validate_sqlite.py usa apenas a biblioteca padrão (sqlite3) — sem dependências.
