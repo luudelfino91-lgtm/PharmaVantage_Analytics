@@ -9,3 +9,12 @@ __pycache__/
 
 # scratch backup made during model debugging, not part of the current project
 powerbi/_backup_SemanticModel_antes/
+
+# Editor local (config pessoal, não faz parte da entrega)
+.vscode/
+.venv/
+
+# Materiais brutos do desafio (áudio, planilha, banco, transcrição) — insumo do curso,
+# não produto do trabalho. As análises derivadas ficam documentadas em docs/.
+Base e Materiais Auxiliares/
+Duvidas do Desafio.docx
