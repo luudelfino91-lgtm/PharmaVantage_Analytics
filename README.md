@@ -44,6 +44,10 @@ Cada query do projeto carrega, no próprio código, a **hipótese registrada ant
 
 Escrever a hipótese antes é o que separa análise de justificativa. Sem esse registro, qualquer resultado vira confirmação retroativa de alguma coisa.
 
+Essa mesma disciplina foi aplicada de novo, numa segunda rodada: as **19 hipóteses levantadas
+de viva voz pela diretoria** no áudio do Datacast e as **12 hipóteses próprias** levantadas
+sem roteiro foram auditadas uma a uma contra o banco — ver [Fase 3](#fase-3--auditoria-das-hipóteses-do-datacast-e-cenários-ocultos).
+
 ---
 
 ## Arquitetura
@@ -56,8 +60,10 @@ flowchart LR
     C --> E["📊 insights_iniciais.md<br/>resultados + leitura"]
     C -.validação.-> F["✔️ validate_sqlite.py<br/>reconcilia totais"]
     E --> G["⭐ star_schema.md<br/>+ dax_measures.txt"]
-    G --> H["🖥️ Mockup de 3 telas"]
+    G --> H["🖥️ .pbip · 6 páginas"]
     E --> I["📈 executive_summary.md<br/>6 slides"]
+    F -.auditoria.-> J["🔍 auditoria_hipoteses.md<br/>19+12 hipóteses"]
+    J --> H
 ```
 
 O fluxo tem uma regra: **nada avança sem a etapa anterior.** Nenhuma query foi escrita antes do mapeamento das dores. Nenhuma medida DAX foi escrita antes de existir um resultado que a justificasse. Nenhum slide foi montado antes do número estar validado.
@@ -69,21 +75,31 @@ O fluxo tem uma regra: **nada avança sem a etapa anterior.** Nenhuma query foi 
 ```
 .
 ├── docs/
-│   ├── business_context.md      Fase 1 · as 8 dores extraídas do áudio da diretoria
-│   └── insights_iniciais.md     Fase 2 · 5 queries, resultados reais e leitura analítica
+│   ├── business_context.md          Fase 1 · as 8 dores extraídas do áudio da diretoria
+│   ├── insights_iniciais.md         Fase 2 · 5 queries, resultados reais e leitura analítica
+│   ├── cenarios_ocultos.md          Fase 2.5 · 3 achados novos, sem roteiro, pré-Power BI
+│   ├── auditoria_hipoteses.md       Fase 3 · 19+12 hipóteses auditadas + 8 recomendações
+│   └── meta_vs_realizado_ruido.md   Nota lateral · a lógica estatística por trás da meta
 ├── scripts/
-│   ├── run_sql_server.py        Entregável oficial · T-SQL via pyodbc + Windows Auth
-│   └── validate_sqlite.py       Harness de validação · reconcilia contra o gabarito
+│   ├── run_sql_server.py            Entregável oficial · T-SQL via pyodbc + Windows Auth
+│   └── validate_sqlite.py           Harness de validação · reconcilia contra o gabarito
 ├── powerbi/
-│   ├── star_schema.md           Modelo dimensional, cardinalidades e direções de filtro
-│   ├── dax_measures.txt         50 medidas em 8 pastas, VAR em todo cálculo composto
-│   └── mockup_dashboard.html    3 telas navegáveis com dados reais
+│   ├── PharmaVantage Analytics.pbip         Projeto Power BI (PBIP)
+│   ├── PharmaVantage Analytics.Report/      6 páginas, definição em PBIR
+│   ├── PharmaVantage Analytics.SemanticModel/   Modelo tabular, TMDL, 50+ medidas DAX
+│   ├── star_schema.md               Modelo dimensional, cardinalidades e direções de filtro
+│   ├── dax_measures.txt             Medidas em 8 pastas, VAR em todo cálculo composto
+│   └── mockup_dashboard.html        Mockup navegável, precursor do .pbip
 ├── presentation/
-│   └── executive_summary.md     Roteiro de 6 slides, sem jargão técnico
+│   └── executive_summary.md         Roteiro de 6 slides, sem jargão técnico
+├── CHANGELOG.md                     Histórico de versões do projeto
 └── README.md
 ```
 
-🖥️ **Mockup online:** [3 telas do dashboard](https://claude.ai/code/artifact/0762d509-2d8f-43f4-9d2a-d567d401b5e2)
+🖥️ **Relatório completo (6 páginas, `.pbip`):** ver `powerbi/`
+🔍 **Auditoria das hipóteses (HTML):** [Farma Xperiun sob Auditoria](https://claude.ai/code/artifact/3c747f2d-8622-4694-bf4e-c47c5257a889)
+🗺️ **Cenários ocultos (HTML):** [Cenários Ocultos](https://claude.ai/code/artifact/9f0a39b6-b30f-4b78-bc6a-38218ffa4670)
+🖼️ **Mockup original (3 telas):** [3 telas do dashboard](https://claude.ai/code/artifact/0762d509-2d8f-43f4-9d2a-d567d401b5e2)
 
 ---
 
@@ -138,13 +154,44 @@ O turno da noite tem 4 horas; manhã e tarde têm 5. Comparar faturamento absolu
 [OK] ticket_medio     esperado=         27.09   obtido=         27.09
 ```
 
-Uma query pode estar sintaticamente perfeita e semanticamente errada — um `JOIN` que duplica linhas passa despercebido até alguém somar. Reconciliar contra um total conhecido pega isso na hora.
+Uma query pode estar sintaticamente perfeita e semanticamente errada — um `JOIN` que duplica linhas passa despercebido até alguém somar. Reconciliar contra um total conhecido pega isso na hora. A mesma disciplina foi repetida na Fase 3: cada número do relatório de auditoria foi recalculado por um agente independente, direto no banco, sem confiar no texto já escrito — pegou 2 imprecisões antes da entrega (ver `docs/auditoria_hipoteses.md`, seção "Auditoria dos números").
 
 ### 5. Limitação exposta é limitação tratada
 
 Nesta base os antialérgicos têm **pico no inverno** e os antiasmáticos **caem no inverno** — o inverso da expectativa clínica e da própria orientação da documentação do desafio.
 
 Isso podia ter virado uma nota de rodapé. Virou um alerta em tarja âmbar no meio da tela de diagnóstico e um item com prazo no plano de ação. Uma limitação escondida vira decisão errada; exposta, vira pergunta para o negócio.
+
+---
+
+## Fase 3 — Auditoria das hipóteses do Datacast e cenários ocultos
+
+A diretoria registrou 19 hipóteses de viva voz no áudio do Datacast (crescimento
+implacável, geografia dos fornecedores, o "mistério" de 2019, sazonalidade de outubro,
+entre outras). Cada uma foi auditada contra o banco, com veredito de **Confirmada /
+Refutada / Parcial / Não verificável** — nenhuma aceita por autoridade de quem falou.
+
+Em paralelo, uma segunda rodada sem roteiro (`docs/cenarios_ocultos.md`) testou mais 14
+hipóteses próprias e chegou ao achado mais relevante do projeto: **67% da queda de margem
+de 2014 a 2019 vem de mudança no mix de produtos** (migração para categorias controladas,
+que têm margem estruturalmente menor por regulação de preço) — não de erosão de
+preço/custo nem de desconto agressivo, como a intuição sugeriria.
+
+Isso virou entrega formal em duas frentes:
+
+- **`docs/auditoria_hipoteses.md`** — as 19 hipóteses do Datacast + 12 hipóteses próprias
+  (7 confirmadas, 5 refutadas) + respostas às perguntas do briefing (`Solicitação.txt`) +
+  ranking de impacto + 8 recomendações aplicáveis.
+- **Duas páginas novas no `.pbip`:** *04 · Hipóteses do Datacast* (veredito visual das
+  hipóteses com maior carga de dado) e *05 · Cenários & Impacto* (o efeito-mix de margem,
+  lucro perdido por produto abaixo da média da casa, e o gap de margem da Cimed vs.
+  benchmark), sustentadas por 4 medidas DAX novas (`% da Receita Total`, `Margem Média da
+  Casa`, `Lucro Perdido vs. Média da Casa`, `Lucro Perdido Total (produtos)`).
+
+Uma investigação lateral adicional — por que a meta mensal nunca acompanha o realizado —
+está registrada em `docs/meta_vs_realizado_ruido.md`: o padrão estatístico (meta ≈
+realizado do mesmo mês × ruído aleatório, sem viés por mês ou por ano) explica por que
+~97% de atingimento agregado convive com só 45% dos meses individualmente batidos.
 
 ---
 
@@ -190,7 +237,7 @@ O varejo farmacêutico tem quatro tensões estruturais. O modelo endereça as qu
 
 **Sazonalidade que ninguém mede.** Estoque de sazonal comprado errado é dinheiro parado ou venda perdida — não existe meio-termo. O índice sazonal **por categoria**, e não pelo total, foi o que permitiu testar as duas teses de outubro em vez de escolher uma por intuição.
 
-**Meta que não organiza esforço.** Metas mensais planas ignoram que os meses têm quantidades diferentes de dias úteis e feriados. `Meta Ajustada por Dias Úteis` separa o que é desempenho do que é artefato de calendário — e `Aderência da Meta ao Realizado` denuncia quando a meta virou espelho do passado.
+**Meta que não organiza esforço.** Metas mensais planas ignoram que os meses têm quantidades diferentes de dias úteis e feriados. `Meta Ajustada por Dias Úteis` separa o que é desempenho do que é artefato de calendário — e `Aderência da Meta ao Realizado` denuncia quando a meta virou espelho do passado. A Fase 3 aprofundou essa pista até a causa estatística provável (`docs/meta_vs_realizado_ruido.md`).
 
 ---
 
@@ -201,6 +248,7 @@ O varejo farmacêutico tem quatro tensões estruturais. O modelo endereça as qu
 - **Metas de out/nov/dez de 2019 estão zeradas** por característica da base. Meta zero é ausência de meta, não meta baixa — os três meses saem do cálculo de atingimento.
 - **A sazonalidade invertida** de antialérgicos e antiasmáticos é reportada como achado a validar, nunca como recomendação de compra.
 - **O que interrompeu o registro em outubro de 2019** não é respondível pelos dados. A análise mostra que a operação estava saudável no último dia; a causa da interrupção está fora da base.
+- **Os materiais brutos do desafio** (áudio do Datacast, planilha original, banco SQLite, transcrição, dúvidas da diretoria) não fazem parte deste repositório — são insumo do curso, não produto do trabalho. Toda análise derivada deles está documentada em `docs/`.
 
 ---
 
