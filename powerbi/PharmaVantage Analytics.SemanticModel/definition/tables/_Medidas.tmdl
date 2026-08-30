@@ -620,6 +620,61 @@ table _Medidas
 		displayFolder: 03 · Metas
 		lineageTag: c70c4ceb-d5ae-4880-93e3-20b8af3eec49
 
+	measure 'Receita Líquida L.Y.' =
+			
+			
+			CALCULATE(
+			    [Receita Líquida],
+			    SAMEPERIODLASTYEAR(d_calendario[data])
+			)
+		displayFolder: 01 · Base
+		lineageTag: 88806713-fc38-46af-a0b6-7d310a25e574
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Participação do item no total visível (respeita slicers, ignora o recorte do próprio visual). Usado para medir DESLOCAMENTO DE MIX: Sistema Respiratório saiu de 22,0% da receita em 2014 para 36,9% em 2019.
+	measure '% da Receita Total' =
+			VAR _Item = [Receita Líquida]
+			VAR _Total = CALCULATE ( [Receita Líquida], ALLSELECTED () )
+			RETURN
+			    DIVIDE ( _Item, _Total )
+		formatString: 0.0%
+		displayFolder: 02 · KPIs
+
+	/// Margem média do conjunto visível, usada como linha de base para comparar item a item. Serve de benchmark para 'Lucro Perdido vs. Média da Casa'. Valor global da base: 29,0%.
+	measure 'Margem Média da Casa' =
+			VAR _Lucro = CALCULATE ( [Lucro], ALLSELECTED () )
+			VAR _Receita = CALCULATE ( [Receita Líquida], ALLSELECTED () )
+			RETURN
+			    DIVIDE ( _Lucro, _Receita )
+		formatString: 0.0%
+		displayFolder: 02 · KPIs
+
+	/// QUANTO CUSTA a margem abaixo da média, em reais. Receita do item x (margem média da casa - margem do item), só quando o item está ABAIXO da média. Formoterol 12mcg + Budesonida 200mcg somam ~R$ 37,5 mil - 5,6% do lucro total da série.
+	measure 'Lucro Perdido vs. Média da Casa' =
+			VAR _Receita = [Receita Líquida]
+			VAR _MargemItem = [Margem %]
+			VAR _MargemCasa = [Margem Média da Casa]
+			VAR _Gap = _MargemCasa - _MargemItem
+			RETURN
+			    IF ( _Gap > 0, _Receita * _Gap, BLANK () )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 07 · Produto
+
+	/// Soma, produto a produto, o lucro que deixou de existir por margem abaixo da média da casa. Agrega corretamente em qualquer nível (SUMX sobre produtos), ao contrário da versão linha a linha. Valor global: R$ 75.359 (11,2% do lucro total), concentrado em 15 dos 33 produtos - só Formoterol 12mcg e Budesonida 200mcg respondem por R$ 37.508 disso.
+	measure 'Lucro Perdido Total (produtos)' =
+			VAR _MargemCasa = [Margem Média da Casa]
+			RETURN
+			    SUMX (
+			        VALUES ( d_produto[nome_produto] ),
+			        VAR _Rec = [Receita Líquida]
+			        VAR _Marg = [Margem %]
+			        VAR _Gap = _MargemCasa - _Marg
+			        RETURN IF ( _Gap > 0, _Rec * _Gap, 0 )
+			    )
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00
+		displayFolder: 07 · Produto
+
 	column _
 		lineageTag: 8187144f-93fd-44d4-abed-72541ee33f9e
 		isNameInferred
