@@ -47,9 +47,40 @@
               },
               "queryRef": "_Medidas.Receita Líquida",
               "nativeQueryRef": "Receita Líquida"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Medidas"
+                    }
+                  },
+                  "Property": "Receita Líquida L.Y."
+                }
+              },
+              "queryRef": "_Medidas.Receita Líquida L.Y.",
+              "nativeQueryRef": "Receita Líquida L.Y."
             }
           ]
         }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "d_periodo"
+                  }
+                },
+                "Property": "AnoMes"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ]
       }
     },
     "objects": {

@@ -13,6 +13,9 @@ table d_turno
 		dataType: string
 		lineageTag: f852e16a-783f-4ebf-a9ef-6562a30fb419
 		sourceColumn: nome_turno
+		sortByColumn: turno_id
+
+		changedProperty = SortByColumn
 
 	column hora_inicio
 		dataType: int64
