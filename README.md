@@ -4,6 +4,8 @@
 
 `SQL Server` · `T-SQL` · `Python` · `Power BI` · `DAX` · `Modelagem Dimensional`
 
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Lucas_Delfino-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/lucasdelfino-/)
+
 ---
 
 ## O problema
@@ -251,5 +253,7 @@ O varejo farmacêutico tem quatro tensões estruturais. O modelo endereça as qu
 - **Os materiais brutos do desafio** (áudio do Datacast, planilha original, banco SQLite, transcrição, dúvidas da diretoria) não fazem parte deste repositório — são insumo do curso, não produto do trabalho. Toda análise derivada deles está documentada em `docs/`.
 
 ---
+
+**Autor:** Lucas Delfino — [linkedin.com/in/lucasdelfino-](https://www.linkedin.com/in/lucasdelfino-/)
 
 *Data Challenge · MBA em Data Analytics · Xperiun*
