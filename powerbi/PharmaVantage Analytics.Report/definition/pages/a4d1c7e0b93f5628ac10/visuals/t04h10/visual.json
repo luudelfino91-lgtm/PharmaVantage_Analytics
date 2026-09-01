@@ -23,7 +23,7 @@
                     "textStyle": {
                       "fontFamily": "Segoe UI Semibold",
                       "fontSize": "15px",
-                      "color": "#0B2545"
+                      "color": "#F1EDE4"
                     }
                   }
                 ],
@@ -36,7 +36,7 @@
                     "textStyle": {
                       "fontFamily": "Segoe UI",
                       "fontSize": "7px",
-                      "color": "#2D3748"
+                      "color": "#C9D3DC"
                     }
                   }
                 ],
@@ -49,7 +49,7 @@
                     "textStyle": {
                       "fontFamily": "Segoe UI Semibold",
                       "fontSize": "13px",
-                      "color": "#E08738"
+                      "color": "#F2A93C"
                     }
                   }
                 ],
@@ -62,7 +62,7 @@
                     "textStyle": {
                       "fontFamily": "Segoe UI",
                       "fontSize": "7px",
-                      "color": "#2D3748"
+                      "color": "#C9D3DC"
                     }
                   }
                 ],
@@ -75,7 +75,7 @@
                     "textStyle": {
                       "fontFamily": "Segoe UI",
                       "fontSize": "12px",
-                      "color": "#2D3748"
+                      "color": "#C9D3DC"
                     }
                   }
                 ],
@@ -102,7 +102,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#FFFFFF'"
+                      "Value": "'#151B24'"
                     }
                   }
                 }
@@ -126,7 +126,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#DCE4E1'"
+                      "Value": "'#262E38'"
                     }
                   }
                 }

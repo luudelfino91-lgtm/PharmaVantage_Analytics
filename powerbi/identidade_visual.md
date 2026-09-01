@@ -154,3 +154,60 @@ na tabela de produtos (lista completa ordenada); sem o gráfico "2019 vs. 2018 p
 operado" (comparação dia a dia entre dois anos, mais complexa que os demais visuais); sem a
 métrica "atingimento de quantidade" do mockup (não existe medida pronta equivalente no
 modelo).
+
+---
+
+## v2 — Identidade escura + âmbar dominante (2026-08-30)
+
+Pedido do usuário: aplicar ao dashboard algo da energia visual da Cimed (fornecedor real da
+base, "em alta" no mercado no momento) sem replicar literalmente o amarelo saturado do site
+institucional dela — que funciona para uma marca de consumo, mas prejudicaria a leitura de um
+relatório financeiro/de auditoria de margem. A direção escolhida foi um meio-termo mais seguro:
+evoluir a paleta PharmaVantage para um tema escuro com Amber como cor dominante (em vez de
+coadjuvante), inspirado também na referência "AN Variedades" (dashboard escuro, acento
+dourado único) que o usuário trouxe como segunda imagem.
+
+Princípio: nenhuma cor nova foi inventada — cada tom da v2 é uma reiluminação da mesma cor de
+marca da v1 (mesmo matiz, luminosidade/saturação recalibradas para funcionar sobre fundo
+quase-preto em vez de fundo claro). O Navy Slate original, que é quase-preto por design,
+deixou de funcionar como uma cor "acento" própria nesse contexto (ficaria invisível sobre o
+novo fundo) — seu papel de swatch categórico foi herdado pela variante clara já existente na
+paleta (`#3D5A80` → agora `#6E93BF`).
+
+| Papel | v1 (claro) | v2 (escuro) |
+|---|---|---|
+| Fundo de página / cabeçalho de tabela | `#F4F7F6` | `#0B0F14` |
+| Fundo de cartão/visual | `#FFFFFF` | `#151B24` |
+| Fundo alternativo (zebra / meio de gradiente) | — | `#1B222C` |
+| Borda de cartão/textbox | `#E2E8F0` / `#DCE4E1` | `#262E38` |
+| Linha de grade de tabela | `#EAEFED` | `#232B35` |
+| Texto de destaque / título | `#0B2545` (Navy Slate) | `#F1EDE4` |
+| Texto de corpo / rótulo de eixo | `#2D3748` (Graphite) | `#C9D3DC` |
+| Texto discreto (era Slate `#6C7A89`) | `#6C7A89` | `#9AA6B2` |
+| **Amber (agora dominante)** | `#E08738` | `#F2A93C` |
+| Teal | `#139A8C` | `#2FBBA8` |
+| Crimson | `#C94A4A` | `#E2585A` |
+| Sage | `#8DAA9D` | `#A9C4B8` |
+| Navy (papel de accent categórico) | `#3D5A80` | `#6E93BF` |
+
+Dois tons novos completam os 8 `dataColors` do tema (não tinham correspondente direto na v1,
+que usava `#6C7A89`/`#98C1D9` nesses dois slots sem uso real em nenhum gráfico do relatório):
+`#8FCBE0` (azul claro) e `#C08552` (bronze — neutro quente, equilibra os 6 tons frios restantes).
+
+**Ordem dos `dataColors` invertida de propósito**: Amber agora ocupa o índice 0 (era o Navy),
+para que qualquer gráfico com cor automática (sem `dataPoint` explícito, ex. `v05mix` por
+grupo terapêutico) use Amber como cor dominante por padrão — exatamente o "âmbar dominante"
+pedido.
+
+Aplicado em duas frentes: `pharmavantage_theme.json` + o tema registrado no `.pbip`
+(`StaticResources/RegisteredResources/PharmaVantage_Corporate_Theme…json`, cauda de 500+ cores
+auto-geradas pelo Power BI preservada intacta — nunca é exercida, pois nenhuma categoria do
+modelo passa de 8 valores distintos); e recoloração de 46 `visual.json` (147 valores) onde a
+cor de marca estava gravada como literal (accent bars, `dataPoint.fill`, títulos de cartão,
+textboxes, tabela `v05tab`, gradiente condicional da matriz de sazonalidade) — o tema sozinho
+não alcança esses casos porque são overrides explícitos por visual, não herança de tema.
+
+Tipografia mantida em Segoe UI (Semibold/Bold/Regular, já usada em todo o `.pbip`) — sem
+importar fonte externa, para não arriscar um fallback silencioso numa máquina sem a fonte
+instalada. O "peso" extra pedido veio do tamanho do número de destaque nos cartões (20pt →
+22pt) e do contraste alto do fundo escuro, não de uma família tipográfica nova.

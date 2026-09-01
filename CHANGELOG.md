@@ -3,6 +3,24 @@
 Todas as mudanças relevantes do projeto Farma Xperiun / PharmaVantage Analytics, por fase de
 entrega. Formato livre, em português, alinhado ao histórico real de commits.
 
+## [Identidade v2] — 2026-08-30
+
+### Alterado
+- Tema do Power BI (`pharmavantage_theme.json` + tema registrado no `.pbip`) migrado de fundo
+  claro para escuro, com Amber promovido a cor dominante (era coadjuvante). Cada tom da v2 é
+  uma reiluminação do mesmo matiz da v1 — nenhuma cor nova fora da família da marca. Detalhes,
+  tabela de mapeamento completa e racional em `powerbi/identidade_visual.md`, seção "v2".
+- 46 `visual.json` recoloridos (147 valores) onde a cor de marca estava gravada como literal
+  por visual (accent bars, preenchimento de gráfico, títulos, textboxes, tabela da página 05,
+  gradiente condicional da matriz de sazonalidade) — o tema sozinho não alcança esses casos.
+- Motivação: pedido do usuário para aproximar a energia visual da Cimed (fornecedor real da
+  base) sem replicar o amarelo saturado do site dela, que arriscaria a legibilidade de um
+  relatório financeiro. Referência adicional: dashboard "AN Variedades" (escuro, acento único).
+
+### Pendente
+- Validação visual no Power BI Desktop (mudança feita com o Desktop fechado, por edição direta
+  de arquivo — igual às fases anteriores).
+
 ## [Fase 3] — 2026-08-30
 
 ### Adicionado

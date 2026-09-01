@@ -1,44 +1,44 @@
 {
   "name": "PharmaVantage_Corporate_Theme",
   "dataColors": [
-    "#0B2545",
-    "#139A8C",
-    "#8DAA9D",
-    "#E08738",
-    "#C94A4A",
-    "#3D5A80",
-    "#6C7A89",
-    "#98C1D9"
+    "#F2A93C",
+    "#2FBBA8",
+    "#E2585A",
+    "#A9C4B8",
+    "#6E93BF",
+    "#9AA6B2",
+    "#8FCBE0",
+    "#C08552"
   ],
-  "background": "#F4F7F6",
-  "foreground": "#0B2545",
-  "tableAccent": "#139A8C",
+  "background": "#0B0F14",
+  "foreground": "#F1EDE4",
+  "tableAccent": "#F2A93C",
   "visualStyles": {
     "*": {
       "*": {
         "outspacePane": [
           {
-            "backgroundColor": { "solid": { "color": "#F4F7F6" } }
+            "backgroundColor": { "solid": { "color": "#0B0F14" } }
           }
         ],
         "background": [
           {
             "show": true,
-            "color": { "solid": { "color": "#FFFFFF" } },
+            "color": { "solid": { "color": "#151B24" } },
             "transparency": 0
           }
         ],
         "border": [
           {
             "show": true,
-            "color": { "solid": { "color": "#E2E8F0" } },
+            "color": { "solid": { "color": "#262E38" } },
             "radius": 4
           }
         ],
         "dropShadow": [
           {
-            "show": true,
-            "color": { "solid": { "color": "#CBD5E1" } },
+            "show": false,
+            "color": { "solid": { "color": "#000000" } },
             "position": "Outer",
             "preset": "BottomRight"
           }
@@ -48,7 +48,7 @@
             "show": true,
             "fontFamily": "Segoe UI Semibold",
             "fontSize": 12,
-            "fontColor": { "solid": { "color": "#0B2545" } },
+            "fontColor": { "solid": { "color": "#F1EDE4" } },
             "alignment": "left"
           }
         ]
@@ -58,7 +58,7 @@
       "*": {
         "background": [
           {
-            "color": { "solid": { "color": "#F4F7F6" } },
+            "color": { "solid": { "color": "#0B0F14" } },
             "transparency": 0
           }
         ]
@@ -69,15 +69,15 @@
         "labels": [
           {
             "fontFamily": "Segoe UI Bold",
-            "fontSize": 20,
-            "color": { "solid": { "color": "#0B2545" } }
+            "fontSize": 22,
+            "color": { "solid": { "color": "#F1EDE4" } }
           }
         ],
         "categoryLabels": [
           {
             "fontFamily": "Segoe UI",
             "fontSize": 10,
-            "color": { "solid": { "color": "#6C7A89" } }
+            "color": { "solid": { "color": "#9AA6B2" } }
           }
         ]
       }
@@ -86,23 +86,23 @@
   "textClasses": {
     "callout": {
       "fontFace": "Segoe UI Bold",
-      "fontSize": 20,
-      "color": "#0B2545"
+      "fontSize": 22,
+      "color": "#F1EDE4"
     },
     "title": {
       "fontFace": "Segoe UI Semibold",
       "fontSize": 12,
-      "color": "#0B2545"
+      "color": "#F1EDE4"
     },
     "header": {
       "fontFace": "Segoe UI Semibold",
       "fontSize": 11,
-      "color": "#0B2545"
+      "color": "#F1EDE4"
     },
     "label": {
       "fontFace": "Segoe UI",
       "fontSize": 9,
-      "color": "#2D3748"
+      "color": "#C9D3DC"
     }
   }
 }
