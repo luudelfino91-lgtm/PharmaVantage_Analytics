@@ -23,7 +23,7 @@
                     "textStyle": {
                       "fontFamily": "Segoe UI Semibold",
                       "fontSize": "15px",
-                      "color": "#F1EDE4"
+                      "color": "#FFFFFF"
                     }
                   }
                 ],
@@ -36,7 +36,7 @@
                     "textStyle": {
                       "fontFamily": "Segoe UI",
                       "fontSize": "7px",
-                      "color": "#C9D3DC"
+                      "color": "#B3B3B3"
                     }
                   }
                 ],
@@ -62,7 +62,7 @@
                     "textStyle": {
                       "fontFamily": "Segoe UI",
                       "fontSize": "7px",
-                      "color": "#C9D3DC"
+                      "color": "#B3B3B3"
                     }
                   }
                 ],
@@ -75,7 +75,7 @@
                     "textStyle": {
                       "fontFamily": "Segoe UI",
                       "fontSize": "12px",
-                      "color": "#C9D3DC"
+                      "color": "#B3B3B3"
                     }
                   }
                 ],
@@ -88,7 +88,7 @@
                     "textStyle": {
                       "fontFamily": "Segoe UI",
                       "fontSize": "7px",
-                      "color": "#C9D3DC"
+                      "color": "#B3B3B3"
                     }
                   }
                 ],
@@ -101,7 +101,7 @@
                     "textStyle": {
                       "fontFamily": "Segoe UI",
                       "fontSize": "12px",
-                      "color": "#C9D3DC"
+                      "color": "#B3B3B3"
                     }
                   }
                 ],
@@ -128,7 +128,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#151B24'"
+                      "Value": "'#1E1E1E'"
                     }
                   }
                 }
@@ -152,7 +152,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#262E38'"
+                      "Value": "'#2E2E2E'"
                     }
                   }
                 }

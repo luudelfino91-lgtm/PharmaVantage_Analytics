@@ -1,14 +1,14 @@
 {
   "name": "PharmaVantage_Corporate_Theme",
   "dataColors": [
-    "#F2A93C",
-    "#2FBBA8",
+    "#F4D03F",
+    "#6E6E6E",
+    "#8A8A8A",
+    "#A8862A",
+    "#4A4A4A",
+    "#C9C9C9",
     "#E2585A",
-    "#A9C4B8",
-    "#6E93BF",
-    "#9AA6B2",
-    "#8FCBE0",
-    "#C08552",
+    "#3FBF7F",
     "#3599B8",
     "#DFBFBF",
     "#4AC5BB",
@@ -482,9 +482,9 @@
     "#0D2E25",
     "#54484E"
   ],
-  "background": "#0B0F14",
-  "foreground": "#F1EDE4",
-  "tableAccent": "#F2A93C",
+  "background": "#121212",
+  "foreground": "#FFFFFF",
+  "tableAccent": "#F4D03F",
   "visualStyles": {
     "*": {
       "*": {
@@ -492,7 +492,7 @@
           {
             "backgroundColor": {
               "solid": {
-                "color": "#0B0F14"
+                "color": "#121212"
               }
             }
           }
@@ -502,7 +502,7 @@
             "show": true,
             "color": {
               "solid": {
-                "color": "#151B24"
+                "color": "#1E1E1E"
               }
             },
             "transparency": 0
@@ -513,10 +513,10 @@
             "show": true,
             "color": {
               "solid": {
-                "color": "#262E38"
+                "color": "#2E2E2E"
               }
             },
-            "radius": 4
+            "radius": 6
           }
         ],
         "dropShadow": [
@@ -534,11 +534,11 @@
         "title": [
           {
             "show": true,
-            "fontFamily": "Segoe UI Semibold",
+            "fontFamily": "Segoe UI Bold",
             "fontSize": 12,
             "fontColor": {
               "solid": {
-                "color": "#F1EDE4"
+                "color": "#FFFFFF"
               }
             },
             "alignment": "left"
@@ -552,7 +552,7 @@
           {
             "color": {
               "solid": {
-                "color": "#0B0F14"
+                "color": "#121212"
               }
             },
             "transparency": 0
@@ -564,22 +564,48 @@
       "*": {
         "labels": [
           {
-            "fontFamily": "Segoe UI Bold",
-            "fontSize": 22,
+            "fontFamily": "Segoe UI Black",
+            "fontSize": 24,
             "color": {
               "solid": {
-                "color": "#F1EDE4"
+                "color": "#FFFFFF"
               }
             }
           }
         ],
         "categoryLabels": [
           {
-            "fontFamily": "Segoe UI",
-            "fontSize": 10,
+            "fontFamily": "Consolas",
+            "fontSize": 9,
             "color": {
               "solid": {
-                "color": "#9AA6B2"
+                "color": "#7A7A7A"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "cardVisual": {
+      "*": {
+        "value": [
+          {
+            "fontFamily": "Segoe UI Black",
+            "fontSize": 24,
+            "fontColor": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            }
+          }
+        ],
+        "label": [
+          {
+            "fontFamily": "Consolas",
+            "fontSize": 9,
+            "fontColor": {
+              "solid": {
+                "color": "#7A7A7A"
               }
             }
           }
@@ -589,24 +615,24 @@
   },
   "textClasses": {
     "callout": {
-      "fontFace": "Segoe UI Bold",
-      "fontSize": 22,
-      "color": "#F1EDE4"
+      "fontFace": "Segoe UI Black",
+      "fontSize": 24,
+      "color": "#FFFFFF"
     },
     "title": {
-      "fontFace": "Segoe UI Semibold",
+      "fontFace": "Segoe UI Bold",
       "fontSize": 12,
-      "color": "#F1EDE4"
+      "color": "#FFFFFF"
     },
     "header": {
       "fontFace": "Segoe UI Semibold",
       "fontSize": 11,
-      "color": "#F1EDE4"
+      "color": "#FFFFFF"
     },
     "label": {
       "fontFace": "Segoe UI",
       "fontSize": 9,
-      "color": "#C9D3DC"
+      "color": "#B3B3B3"
     }
   }
 }

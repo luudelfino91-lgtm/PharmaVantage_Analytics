@@ -211,3 +211,69 @@ Tipografia mantida em Segoe UI (Semibold/Bold/Regular, já usada em todo o `.pbi
 importar fonte externa, para não arriscar um fallback silencioso numa máquina sem a fonte
 instalada. O "peso" extra pedido veio do tamanho do número de destaque nos cartões (20pt →
 22pt) e do contraste alto do fundo escuro, não de uma família tipográfica nova.
+
+---
+
+## v3 — Disciplina de cor: ouro + cinzas neutros (2026-09-02)
+
+**Por que a v2 não funcionou.** O feedback foi direto: *"ao meu ver só ficou um modo dark"* —
+e estava certo. A v2 escureceu o fundo mas manteve os cinco matizes de marca da v1 (teal,
+sage, navy, âmbar, crimson), todos reiluminados. Cinco cores concorrendo entre si não
+produzem identidade; produzem um tema escuro genérico.
+
+Relendo a referência que o usuário trouxe (dashboard "AN Variedades") o que salta é a
+**disciplina**: ela usa praticamente duas cores. Um dourado quente para tudo que é
+protagonista — valores de dinheiro, marcas de gráfico, chrome interativo — e cinzas neutros
+para todo o resto. Vermelho e verde só aparecem como semântica de estado, nunca como cor
+categórica. É essa economia que faz a peça parecer um produto de marca em vez de um tema.
+
+A v3 aplica essa regra.
+
+| Papel | v2 (escuro genérico) | v3 (ouro + neutros) |
+|---|---|---|
+| Fundo de página | `#0B0F14` (azulado) | `#121212` (neutro) |
+| Superfície de cartão | `#151B24` (azulado) | `#1E1E1E` (neutro) |
+| Zebra / superfície alternativa | `#1B222C` | `#242424` |
+| Cabeçalho de tabela | `#0B0F14` | `#171717` |
+| Borda | `#262E38` | `#2E2E2E` |
+| Grade | `#232B35` | `#2A2A2A` |
+| Texto primário | `#F1EDE4` (off-white) | `#FFFFFF` (branco puro) |
+| Texto de corpo | `#C9D3DC` (azulado) | `#B3B3B3` (neutro) |
+| Texto discreto | `#9AA6B2` | `#7A7A7A` |
+| **Ouro (cor de ação)** | `#F2A93C` (âmbar queimado) | `#F4D03F` (ouro vibrante) |
+| Série protagonista (era teal) | `#2FBBA8` | `#F4D03F` |
+| Série de comparação (era navy) | `#6E93BF` | `#6E6E6E` |
+| Terceira série (era sage) | `#A9C4B8` | `#8A8A8A` |
+| Semântica negativa | `#E2585A` | `#E2585A` (mantido) |
+
+**Regras aplicadas, não substituição 1:1.** A recoloração dependeu do papel de cada valor:
+
+- **Barras de acento dos 21 cartões de KPI:** todas viraram ouro. Uma faixa de cor uniforme
+  repetida em todos os cartões de todas as páginas é a assinatura visual mais barata e mais
+  eficaz que existe. A única exceção é o cartão de *Lucro Perdido*, que segue vermelho porque
+  ali a cor carrega significado.
+- **Gráficos:** o que era série protagonista (teal, âmbar) virou ouro; o que era comparação
+  (navy) virou cinza médio. Isso reproduz o padrão da referência — *Faturamento* em dourado,
+  *Margem* em cinza — e tem um efeito colateral bom: em "Meta vs. Realizado", o realizado
+  passou a ser a série dourada e a meta a cinza, que é exatamente a hierarquia narrativa
+  correta.
+- **Chrome interativo:** cabeçalho de segmentação em ouro (equivale ao botão ativo da
+  referência) — sinaliza "isto se clica" sem precisar de mais nenhum elemento.
+- **Gradiente do heatmap de sazonalidade:** de `teal → off-white → âmbar` para
+  `cinza escuro → superfície → ouro`. A ponta fria deixou de ser um matiz e virou ausência
+  de cor, que é o que uma ponta fria deve ser num fundo escuro.
+
+**Tipografia.** O pedido mencionava Montserrat/Inter/Roboto. Nenhuma delas é garantida numa
+máquina Windows limpa, e fonte ausente no Power BI cai em fallback silencioso — o risco não
+compensa o ganho. Fiquei em Segoe UI, que já é uma sem-serifa moderna e corporativa, e
+busquei presença por peso e contraste: `Segoe UI Black` nos números de KPI (24pt, branco
+puro) e `Segoe UI Bold` nos títulos. O detalhe que dá o sabor técnico da referência veio de
+outro lugar: as legendas pequenas dos cartões passaram para **Consolas** (monoespaçada, que
+acompanha o Windows), imitando o tratamento `[ Total Unidades ]` do painel de referência.
+
+**Sobre a marca.** A inspiração é a CIMED, mas o relatório não leva marca da CIMED. A CIMED
+é um dos oito fornecedores reais da base analisada — colocar a identidade dela no cabeçalho
+de uma análise sobre outra farmácia seria representar como oficial algo que não é. O que foi
+adotado é a *linguagem visual* (ouro vibrante sobre quase-preto, tipografia pesada, economia
+de cor); o letreiro continua sendo o do projeto, no mesmo tratamento: "Pharma" em branco,
+"Vantage" em ouro, tagline em cinza.

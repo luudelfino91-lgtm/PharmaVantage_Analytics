@@ -110,7 +110,7 @@
                           "min": {
                             "color": {
                               "Literal": {
-                                "Value": "'#2FBBA8'"
+                                "Value": "'#4A4A4A'"
                               }
                             },
                             "value": {
@@ -122,7 +122,7 @@
                           "mid": {
                             "color": {
                               "Literal": {
-                                "Value": "'#1B222C'"
+                                "Value": "'#242424'"
                               }
                             },
                             "value": {
@@ -134,7 +134,7 @@
                           "max": {
                             "color": {
                               "Literal": {
-                                "Value": "'#F2A93C'"
+                                "Value": "'#F4D03F'"
                               }
                             },
                             "value": {

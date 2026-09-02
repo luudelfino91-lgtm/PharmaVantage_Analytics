@@ -23,7 +23,7 @@
                     "textStyle": {
                       "fontFamily": "Segoe UI Semibold",
                       "fontSize": "10px",
-                      "color": "#0B0F14"
+                      "color": "#121212"
                     }
                   }
                 ],
@@ -50,7 +50,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#F2A93C'"
+                      "Value": "'#F4D03F'"
                     }
                   }
                 }
@@ -74,7 +74,7 @@
                 "color": {
                   "expr": {
                     "Literal": {
-                      "Value": "'#F2A93C'"
+                      "Value": "'#F4D03F'"
                     }
                   }
                 }
